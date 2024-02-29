@@ -1,0 +1,28 @@
+
+
+
+
+.leaflet-control { 
+  background-color: #fff; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  padding: 5px; 
+  margin: 5px; 
+  display: none; 
+  text-overflow: auto; 
+  position: fixed; /* Fixed position */ 
+  top: 100px; /* Adjust the top position as needed */ 
+  right: 10px; /* Adjust the left position as needed */ 
+  z-index: 1000; /* Set a high z-index to make sure it's above other elements */ 
+} 
+@media only screen and (max-width: 600px) { 
+  .leaflet-control { 
+    position: fixed; 
+    top: 70%; 
+    right: 20px; 
+    z-index: 1000; 
+  } 
+  .body{ 
+    height: 300vh; 
+  } 
+} 
