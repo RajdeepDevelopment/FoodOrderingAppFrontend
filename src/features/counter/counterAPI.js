@@ -1,9 +1,7 @@
 function isMoreThanThreeDays(timestamp) {
   const currentTimestamp = Date.now();
   const timeDifference = Math.abs(currentTimestamp - timestamp);
-
   const seconds = Math.floor(timeDifference / 1000);
-
   if (seconds >= 259200) {
     // 3 days in seconds (3 * 24 * 60 * 60)
     return true;
@@ -24,31 +22,42 @@ export function getProductData() {
     const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
 export function getMeetingData() {
   return new Promise(async (resolve) => {
-    //checkToken
-    const checkToken = await fetch("http://localhost:5000/checkToken");
-    const checkTokenData = await checkToken.json();
-    if (checkTokenData.checkData === true) {
-      const response = await fetch("http://localhost:5000/getMeetsData");
-      const data = await response.json();
-      resolve(data);
-    } else {
-      resolve({ meetings: [] });
-    }
+      try {
+          // Check token
+          const checkToken = await fetch("http://localhost:5000/checkToken");
+          const checkTokenData = await checkToken.json();
+          
+          if (checkTokenData.checkData === true) {
+              // Fetch meeting data
+              const response = await fetch("http://localhost:5000/getMeetsData");
+              const data = await response.json();
+              resolve(data.data);
+          } else {
+              // If token check fails, resolve with empty meetings array
+              resolve({ meetings: [] });
+          }
+      } catch (error) {
+          // If any error occurs during the fetch operations, catch it and log it
+          console.error("Error fetching meeting data:", error);
+          // Resolve with empty meetings array
+          resolve({ meetings: [] });
+      }
   });
 }
+
 
 export function getDeletedProductData() {
   return new Promise(async (resolve) => {
     const response = await fetch(process.env.REACT_APP_PRODUCTS_VIVIBLESTATUS);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getAllOrderData() {
@@ -56,7 +65,7 @@ export function getAllOrderData() {
     const response = await fetch(process.env.REACT_APP_order);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -65,7 +74,7 @@ export function getAllOrderDataByFilter(status) {
     const response = await fetch(process.env.REACT_APP_order_status + status);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -74,7 +83,7 @@ export function getAllUserData() {
     const response = await fetch(process.env.REACT_APP_ALL_USER);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -85,7 +94,7 @@ export function getAllNotAddedToEmailBoxUser() {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -94,28 +103,27 @@ export function getAllAddedToEmailBoxUser() {
     const response = await fetch(process.env.REACT_APP_EmailBox_GET);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
 //getAllAddedToEmailBoxUser
 export function getAllUserSearchData(searchData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/usersection/user?q=" + searchData);
+    const response = await fetch("http://localhost:8000/usersection/userSearch?q=" + searchData);
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
 export function getAllUserNotAddedOnEmailSearchData(searchData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/usersection/user?EmailBox=NotAdded&&q=" + searchData
+      "http://localhost:8000/usersection/userSearch?EmailBox=NotAdded&&q=" + searchData
     );
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -123,8 +131,7 @@ export function getTargetProduct(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(process.env.REACT_APP_TARGET_PRODUCTS + id);
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getSimilerProduct(category, city) {
@@ -133,24 +140,22 @@ export function getSimilerProduct(category, city) {
       `http://localhost:8000/productssection/products/?category=${category}&city=${city}`
     );
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getProductForLocation(city) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/productssection/products/?city=" + city);
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
 export function getSearchResult(dataaa) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8080/products?q=" + dataaa);
+    const response = await fetch("http://localhost:8000/productssection/productsSearch?q=" + dataaa);
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -164,8 +169,7 @@ export function getProductPost(NewProductsData) {
       body: JSON.stringify(NewProductsData),
     });
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -182,8 +186,7 @@ export function getUpdateProduct(productData) {
       }
     );
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -201,10 +204,9 @@ export function getUpdateTargetProduct(productData) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
-
 export function getUpdateApplyJob(ApplyJob) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/applyjob/Apply/" + ApplyJob.id, {
@@ -216,7 +218,7 @@ export function getUpdateApplyJob(ApplyJob) {
     });
 
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getreviewPost(reviewData) {
@@ -265,7 +267,7 @@ export function getreviewPost(reviewData) {
     };
     const tempData = await getUpdateEventObjectData(helperArray);
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -279,7 +281,7 @@ export function getNotificationsPost(notificationsData) {
       body: JSON.stringify(notificationsData),
     });
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getNotificationsDelete(itemId) {
@@ -290,7 +292,6 @@ export function getNotificationsDelete(itemId) {
         method: "DELETE",
       }
     );
-
     resolve({ data: itemId });
   });
 }
@@ -305,13 +306,12 @@ export function getNotifitationData(id) {
       `http://localhost:8000/notificationsection/notification?for=${id}&status=unRead&_sort=time&_order=desc`
     );
     const data2 = await Unread.json();
-    const deleteArrayObject = await data.filter((element) => {
+    const deleteArrayObject = await data.data.filter((element) => {
       return isMoreThanThreeDays(element.time);
     });
     await deleteArrayObject.forEach((element) => {
       getNotificationsDelete(element.id);
     });
-
     resolve({ AllNoti: data, unReadNoti: data2 });
   });
 }
@@ -330,7 +330,7 @@ export function getNotificationsUpdate(updateData) {
     );
 
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -344,8 +344,7 @@ export function getNewMeetPost(postData) {
       body: JSON.stringify(postData),
     });
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -359,8 +358,7 @@ export function getJobDataPost(ApplyData) {
       body: JSON.stringify(ApplyData),
     });
     const data = await response.json();
-
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -368,7 +366,7 @@ export function getReviewData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/reviewsection/review/"+id);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -377,9 +375,9 @@ export function CheckReviewData(checkData) {
     const response = await fetch(
       `http://localhost:8000/reviewsection/review?productId=${checkData.id}&&postUser=${checkData.uid}`
     );
-    const datarr = await response.json();
+    const data = await response.json();
 
-    resolve(datarr);
+    resolve(data.data);
   });
 }
 ////
@@ -388,15 +386,15 @@ export function getAllAppliedData() {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/applyjob/Apply");
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
 export function getAllAppliedDataForSearch(searchData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/Apply?q=" + searchData);
+    const response = await fetch("http://localhost:8000/applyjob/ApplySearch?q=" + searchData);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -404,7 +402,7 @@ export function getJobData() {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8080/jobOpenings");
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getReviewDataForTargerUser(postUser) {
@@ -414,7 +412,7 @@ export function getReviewDataForTargerUser(postUser) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -425,7 +423,7 @@ export function getDeliveryAppliedReq(id) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -436,7 +434,7 @@ export function getOrderDelivered(id) {
     );
     const data = await response.json();
     console.log(data);
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -456,7 +454,7 @@ export function getCreateUser(userAddressData) {
       }
 
       const data = await response.json();
-      resolve(data);
+      resolve(data.data);
     } catch (error) {
       reject(error);
     }
@@ -477,7 +475,7 @@ export function getUpdateUserAddress(newAddressData) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -495,7 +493,7 @@ export function getUpdateReviewBox(checkData) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -515,7 +513,7 @@ export function getUpdateOrderStatus(orderData) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -568,7 +566,7 @@ export function getCreateOrder(Orderdata) {
     };
     const tempData = await getUpdateEventObjectData(helperArray);
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -583,7 +581,7 @@ export function getCreateCart(Cartdata) {
     });
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -598,7 +596,7 @@ export function getUserMessegePost(UserMess) {
     });
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -613,7 +611,7 @@ export function getOutForDeliveryPost(Postdata) {
     });
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -628,7 +626,7 @@ export function getOrderDeliveredPost(Postdata) {
     });
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -639,7 +637,7 @@ export function getOutForDelivery(id) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -650,7 +648,7 @@ export function getUserMessToResData(id) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -663,7 +661,7 @@ export function updateQuantity(updateQnt) {
     });
 
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -671,14 +669,14 @@ export function getCartData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/cartsection/cart?userid=" + id);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getRestaurantsData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/restaurantsection/restaurants?for=" + id);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -686,7 +684,7 @@ export function getPreviousUserData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/usersection/user?userid=" + id);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -694,7 +692,7 @@ export function getDeliveryUserData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/usersection/user?Access=" + id);
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -705,7 +703,7 @@ export function getCheckPostUserBox(id) {
       "http://localhost:8080/UserMessegeRes?dbAdd=" + id
     );
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -715,7 +713,7 @@ export function getOrderData(id) {
       `http://localhost:8000/ordersection/order?belngto=${id}&_sort=OrderPlacedTime&_order=desc`
     );
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -723,7 +721,7 @@ export function getOrderDataforDeliveryBoy() {
   return new Promise(async (resolve) => {
     const response = await fetch("http://localhost:8000/ordersection/order?DeliveryReq");
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -785,7 +783,7 @@ export function getCurrentDeliveryItem(fordata) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 export function getUpdateOutForDelivery(UpdateData) {
@@ -801,7 +799,7 @@ export function getUpdateOutForDelivery(UpdateData) {
       }
     );
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -810,7 +808,7 @@ export function getEventObjectData(id) {
     const response = await fetch(process.env.REACT_APP_EVENTOBJECTDATA+id);
     console.log("responsefiugjfdio", response)
     const data = await response.json();
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -825,7 +823,7 @@ export function getEventObjectPostData(Postdata) {
     });
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
 
@@ -843,6 +841,6 @@ export function getUpdateEventObjectData(UpdateData) {
     );
     const data = await response.json();
 
-    resolve(data);
+    resolve(data.data);
   });
 }
