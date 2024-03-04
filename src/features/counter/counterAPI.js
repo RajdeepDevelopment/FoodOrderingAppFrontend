@@ -17,12 +17,36 @@ export function fetchCount(amount = 1) {
   );
 }
 
-export function getProductData() {
+
+export function getProductData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS);
+    const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS+ `${query}`);
     const data = await response.json();
 
-    resolve(data.data);
+    resolve(data);
+  });
+}
+export function getCategoryData(query) {
+  return new Promise(async (resolve) => {
+    const response = await fetch(`http://localhost:8000/productssection/uniqueCategory`);
+    const data = await response.json();
+
+    resolve(data);
+  });
+}
+export function getPriceRangeData(query) {
+  return new Promise(async (resolve) => {
+    const response = await fetch(`http://localhost:8000/productssection/uniquePriceRange`);
+    const data = await response.json();
+
+    resolve(data);
+  });
+}
+export function getCuisineData(query) {
+  return new Promise(async (resolve) => {
+    const response = await fetch(`http://localhost:8000/productssection/uniqueCuisine`);
+    const data = await response.json();
+    resolve(data);
   });
 }
 
@@ -572,7 +596,7 @@ export function getCreateOrder(Orderdata) {
 
 export function getCreateCart(Cartdata) {
   return new Promise(async (resolve) => {
-    const response = await fetch("localhost:8000/cartsection/cart", {
+    const response = await fetch("http://localhost:8000/cartsection/cart", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -654,7 +678,7 @@ export function getUserMessToResData(id) {
 
 export function updateQuantity(updateQnt) {
   return new Promise(async (resolve) => {
-    const response = await fetch("localhost:8000/cartsection/cart/" + updateQnt.id, {
+    const response = await fetch("http://localhost:8000/cartsection/cart" , {
       method: "PATCH",
       body: JSON.stringify(updateQnt),
       headers: { "content-type": "application/json" },
@@ -727,7 +751,7 @@ export function getOrderDataforDeliveryBoy() {
 
 export function deleteCartItem(itemId) {
   return new Promise(async (resolve) => {
-    const response = await fetch("localhost:8000/cartsection/cart/" + itemId, {
+    const response = await fetch("http://localhost:8000/cartsection/cart/" + itemId, {
       method: "DELETE",
     });
 

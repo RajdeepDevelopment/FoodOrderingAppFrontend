@@ -61,6 +61,9 @@ import {
   getUserMessegePost,
   getreviewPost,
   updateQuantity,
+  getCuisineData,
+  getPriceRangeData,
+  getCategoryData
 } from "./counterAPI";
 
 const initialState = {
@@ -108,6 +111,9 @@ const initialState = {
   notificationData: [],
   eventObjectData: [],
   TargetUserEventObjectData: {},
+  CategoryData: {},
+  PriceRangeData: {},
+  CuisineData: {}
 };
 export const incrementAsync = createAsyncThunk(
   "counter/fetchCount",
@@ -120,8 +126,8 @@ export const incrementAsync = createAsyncThunk(
 
 export const getProductDataAsync = createAsyncThunk(
   "counter/getProductData",
-  async () => {
-    const response = await getProductData();
+  async (query) => {
+    const response = await getProductData(query);
 
     return response;
   }
@@ -136,6 +142,38 @@ export const getTargetProductAsync = createAsyncThunk(
   }
 );
 
+//CategoryData
+export const getCategoryDataAsync = createAsyncThunk(
+  "counter/getCategoryData",
+  async (id) => {
+    const response = await getCategoryData(id);
+    // The value we return becomes the `fulfilled` action payload
+    return response;
+  }
+);
+//CategoryData
+
+//PriceRangeData
+export const getPriceRangeDataAsync = createAsyncThunk(
+  "counter/getPriceRangeData",
+  async (id) => {
+    const response = await getPriceRangeData(id);
+    // The value we return becomes the `fulfilled` action payload
+    return response;
+  }
+);
+//PriceRangeData
+
+
+//CuisineData
+export const getCuisineDataAsync = createAsyncThunk(
+  "counter/getCuisineData",
+  async (id) => {
+    const response = await getCuisineData(id);
+    // The value we return becomes the `fulfilled` action payload
+    return response;
+  }
+);
 export const deleteOutForDeliveryAsync = createAsyncThunk(
   "counter/deleteOutForDelivery",
   async (id) => {
@@ -878,8 +916,8 @@ export const counterSlice = createSlice({
         state.status = "idle";
         const temp = "";
         state.spinerState = false;
-        state.products = action.payload;
-        state.totalProducts = action.payload;
+        state.products = action.payload.data;
+        state.totalProducts =action.payload?.dataLength;
       })
       .addCase(getTargetProductAsync.pending, (state) => {
         state.status = "loading";
@@ -1507,7 +1545,30 @@ export const counterSlice = createSlice({
           }
         });
         state.notificationData = filterArray;
+      }).addCase(getCategoryDataAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getCategoryDataAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.CategoryData
+        = action.payload;
+      }).addCase(getPriceRangeDataAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getPriceRangeDataAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.PriceRangeData
+        = action.payload;
+      }).addCase(getCuisineDataAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getCuisineDataAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.CuisineData
+        = action.payload;
       });
+
+      //getCategoryDataAsync, getPriceRangeDataAsync, getCuisineDataAsync
 
   },
 });
@@ -1565,7 +1626,14 @@ export const selectcurrentDeliveryData = (state) =>
 export const selecteventObjectData = (state) => state.counter.eventObjectData;
 export const selectTargetUserEventObjectData = (state) =>
   state.counter.TargetUserEventObjectData;
-export const selectunReadNotificationData = (state) =>
+export const selectCuisineData = (state) =>
+  state.counter.CuisineData;
+  export const selectPriceRangeData
+  = (state) =>
+  state.counter.PriceRangeData;
+  export const selectCategoryData = (state) =>
+  state.counter.CategoryData;
+  export const selectunReadNotificationData = (state) =>
   state.counter.unReadNotification;
 
 export const incrementIfOdd = (amount) => (dispatch, getState) => {

@@ -42,7 +42,7 @@
       "id": 2,
       "name": "Sushi Comboo",
       "description": "Assorted sushi rolls and sashimi",
-      "price": "17.99",
+      "price": 17.99,
       "discountPercentage": 11.48,
       "reviewCount": 1,
       "rating": 1,
@@ -1521,7 +1521,7 @@
     {
       "name": "Raj D nn",
       "description": "ddsds",
-      "price": "2",
+      "price": 2,
       "discountPercentage": "3",
       "reviewCount": 1,
       "rating": 1,

@@ -74,7 +74,7 @@ export default function Cart() {
   const EventObjectData = useSelector(selecteventObjectData);
 
   function handleQuantityChange(productid, value) {
-    const data = { quantity: value, id: productid };
+    const data = { quantity: value, _id: productid };
     dispatch(updateQuantityAsync(data));
     dispatch(getCartDataAsync(currentUser.uid));
   }
@@ -721,7 +721,7 @@ export default function Cart() {
                                     <select
                                       onChange={(e) =>
                                         handleQuantityChange(
-                                          product.id,
+                                          product._id,
                                           e.target.value
                                         )
                                       }

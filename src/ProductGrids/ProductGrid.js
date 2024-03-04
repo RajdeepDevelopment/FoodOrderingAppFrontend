@@ -21,11 +21,14 @@ import StarRatings from "react-star-ratings";
 
 import {
   getCartDataAsync,
+  getCategoryDataAsync,
   getCreateUserAddressAsync,
+  getCuisineDataAsync,
   getEventObjectDataAsync,
   getEventObjectPostDataAsync,
   getNotifitationDataAsync,
   getPreviousUserDataAsync,
+  getPriceRangeDataAsync,
   getProductDataAsync,
   getProductForLocationAsync,
   getProductPostAsync,
@@ -34,9 +37,13 @@ import {
   getUpdateUserAddressAsync,
   getsearchdataResetAsync,
   getuniqueRestaurantDataAsync,
+  selectCategoryData,
+  selectCuisineData,
   selectPreParams,
   selectPreviousUserData,
+  selectPriceRangeData,
   selectProducts,
+  selectTotalProducts,
   selecteventObjectData,
   selectprevCompleteData,
   selectsearchBarIndicator,
@@ -44,8 +51,9 @@ import {
   selectuser,
   setLongiLatitAsync,
 } from "../features/counter/counterSlice";
-import { filters, images, sortOptions, Fmvalidater, getErrorMessage, ProductsDataShema,options, indianTime, convertToKg, funSetValue } from "./Hooks";
+import { images, sortOptions, Fmvalidater, getErrorMessage, ProductsDataShema,options, indianTime, convertToKg, funSetValue } from "./Hooks";
 import categorySvg from "./img/categorySvg";
+import Select from 'react-select';
 const date = new Date();
 export function ScrollTotop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -62,7 +70,12 @@ const ProductGrid = memo(function ProductGrid() {
   const searchResults = useSelector(selectsearchdata);
   const products1 = useSelector(selectProducts);
   const prevParamsData = useSelector(selectPreParams);
+  const totalProductsLength =  useSelector(selectTotalProducts)
+  const CuisineData =  useSelector(selectCuisineData)
+  const PriceRangeData =  useSelector(selectPriceRangeData)
+  const CategoryData =  useSelector(selectCategoryData)
 
+  // selectCuisineData, selectPriceRangeData, selectCategoryData
   //Selectors For Redux Thunk............
 
   // States variable
@@ -85,7 +98,17 @@ const ProductGrid = memo(function ProductGrid() {
   const [notRerun, setnotRerun] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   const [editBarActive, seteditBarActive] = useState(false);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [sort, setSort] = useState("");
+  const [priceRange, setPricerange] = useState("");
+  const [category, setCategory] = useState("");
+  const [cuisine, setCuisine] = useState("");
+  const [filters, setFilters] = useState([]);
 
+useEffect(()=>{
+  console.log("filters", filters)
+}, [filters])
   // States Variable........
 
   //normal variable
@@ -94,6 +117,27 @@ const ProductGrid = memo(function ProductGrid() {
   let lo = -1;
 
   //normal Variable..............
+
+
+  useEffect(()=>{
+     setFilters ( [
+      {
+        id: "cuisine",
+        name: "Cuisine",
+        options: CuisineData?.data,
+      },
+      {
+        id: "category",
+        name: "Category",
+        options: CategoryData?.data,
+      },
+      {
+        id: "price",
+        name: "Price Range",
+        options: PriceRangeData?.data,
+      },
+    ])
+  }, [CuisineData, PriceRangeData, CategoryData])
 
   // Form management
   const {
@@ -131,7 +175,11 @@ const ProductGrid = memo(function ProductGrid() {
     }
   }, [EventObjectData, previousUserdata]);
 
-  
+  useEffect(()=>{
+    dispatch(getCuisineDataAsync());
+    dispatch(getPriceRangeDataAsync());
+    dispatch(getCategoryDataAsync())
+  }, [])
 
   //getProductForLocationAsync
 
@@ -370,7 +418,7 @@ const ProductGrid = memo(function ProductGrid() {
     }
   }, [dispatch, prevParamsData]);
 
-  function reducer(state, action) {
+   function reducer(state, action) {
     let updatedProducts;
     switch (action.type) {
       case "carausal":
@@ -465,9 +513,7 @@ const ProductGrid = memo(function ProductGrid() {
       case "pagination":
         const startIndex = (action.currentPagerec - 1) * action.itemsPerPage;
         const endIndex = startIndex + action.itemsPerPage;
-
         state.products = action.products.slice(startIndex, endIndex);
-        setcurrentpage(action.currentPagerec);
 
         return state;
 
@@ -499,8 +545,41 @@ const ProductGrid = memo(function ProductGrid() {
   }
 
   useEffect(() => {
-    dispatch(getProductDataAsync());
-  }, [dispatch, filters.options?.checked]);
+ let queryString = ""
+ if(priceRange && priceRange!==""){
+  queryString = queryString + `&priceRange=${priceRange}`
+ }
+
+ if(cuisine &&cuisine!==""){
+  queryString = queryString + `&cuisine=${cuisine}`
+ }
+ if(category && category!==""){
+  queryString = queryString + `&category=${category}`
+ }
+   if(sort !==""){
+    if (sort == "Most Popular") {
+      queryString = queryString + `&_sort=${"rating"}&_order=${"desc"}`   
+    } 
+     if (sort == "Newest") {
+      queryString = queryString + ``   
+    
+    }  if (sort == "Price: Low to High") {
+      queryString = queryString + `&_sort=${"price"}&_order=${"asc"}`   
+
+      queryString = queryString
+    } 
+     if (sort == "Price: High to Low") {
+      queryString = queryString + `&_sort=${"price"}&_order=${"desc"}`   
+    }
+   }
+ 
+   dispatch(getProductDataAsync(`?skip=${skip}&limit=${limit}`+queryString));
+  }, [dispatch, filters.options?.checked, limit,skip, priceRange,sort, cuisine, category]);
+  useEffect(()=>{
+    setSkip(0);
+    setcurrentpage(1);                   
+
+  }, [priceRange,sort, cuisine, category])
 
   useEffect(() => {
     if (locCpmplete) {
@@ -900,7 +979,7 @@ const ProductGrid = memo(function ProductGrid() {
                       <h3 className="sr-only">Categories</h3>
                     </div>
                     <div className="col-lg-9">
-                      {filters.map((section, index) => (
+                      {filters.options?.length >0 && filters?.map((section, index) => (
                         <div key={index + section.name}>
                           <h3 className="modal-header">
                             <button
@@ -908,12 +987,12 @@ const ProductGrid = memo(function ProductGrid() {
                               type="button"
                             >
                               <span className="font-medium filter-head text-gray-900">
-                                {section.name}
+                                {section?.name}
                               </span>
                               <span>
                                 <i
                                   className={`bi ${
-                                    section.open ? "bi-dash" : "bi-plus"
+                                    section?.open ? "bi-dash" : "bi-plus"
                                   }`}
                                 />
                               </span>
@@ -921,7 +1000,7 @@ const ProductGrid = memo(function ProductGrid() {
                           </h3>
                           <div
                             className={`modal-body ${
-                              section.open ? "show" : ""
+                              section?.open ? "show" : ""
                             }`}
                           >
                             <div className="space-y-6">
@@ -930,9 +1009,16 @@ const ProductGrid = memo(function ProductGrid() {
                                   key={optionIdx + "modal-body"}
                                   className="form-check"
                                   onClick={(e) => {
-                                    catagotyFilter(products1, option);
-                                    filters[index].checked =
-                                      !filters[index].checked;
+                                  if(section?.id==="category"){
+                                   setCategory(option.value)
+                                  } 
+                                  if(section?.id==="cuisine"){
+                                   setCuisine(option.value)
+                                  } 
+                                  if(section?.id==="price"){
+                                    setPricerange(option.value)
+                                  }
+                                                               
                                   }}
                                 >
                                   <input
@@ -1047,15 +1133,7 @@ const ProductGrid = memo(function ProductGrid() {
                         <li
                           className="dropdown-item"
                           onClick={() => {
-                            setOpen([]);
-                            setnoFilter(true);
-                            setindexFilter("Sort operation");
-
-                            dispatchrec({
-                              type: "sort",
-                              sortType: option.name,
-                              proData: products1,
-                            });
+                            setSort(option.name)  
                           }}
                         >
                           {option.name}
@@ -1071,7 +1149,7 @@ const ProductGrid = memo(function ProductGrid() {
               {/* Filters */}
               <div className="col-lg-3 mt-2">
                 <div className="d-flex flex-column justify-content-end">
-                  <h3 className="sr-only bhag ">Categories</h3>
+                  <h3 className="sr-only bhag ">Filters</h3>
                   {noFilter && (
                     <div className=" bhag mb-2">
                       <div
@@ -1091,108 +1169,25 @@ const ProductGrid = memo(function ProductGrid() {
                  {categorySvg()}
 
                   {filters.map((section, indexx) => (
-                    <div key={indexx + "modal-header"}>
-                      <h3 className="modal-header">
-                        <button
-                          className={`btn d-flex w-100 align-items-center justify-content-between ${
-                            section.open ? "filter-open" : "filter-closed"
-                          }`}
-                          type="button"
-                          onClick={() => {
-                            if (indexx != indexFilter) {
-                              setindexFilter(indexx);
-                              setnoFilter(true);
-                            } else {
-                              setindexFilter(-1);
-                              setnoFilter(false);
-                            }
-                          }}
-                        >
-                          <span className="font-medium filter-head text-gray-900 gap-2">
-                            {section.name}
-
-                            {indexx !== indexFilter ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                class="bi bi-arrow-down"
-                                viewBox="0 0 16 16"
-                              >
-                                <path
-                                  fill-rule="evenodd"
-                                  d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                class="bi bi-arrow-right"
-                                viewBox="0 0 16 16"
-                              >
-                                <path
-                                  fill-rule="evenodd"
-                                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
-                                />
-                              </svg>
-                            )}
-                          </span>
-                          <i
-                            className={`bi ${
-                              section.open
-                                ? "bi-caret-up-fill"
-                                : "bi-caret-down-fill"
-                            }`}
-                          />
-                        </button>
-                      </h3>
-
-                      {indexx == indexFilter && (
-                        <div
-                          className={`modal-body ${section.open ? "show" : ""}`}
-                        >
-                          <div className="space-y-4">
-                            <form>
-                              {section.options.map((option, optionIdx) => (
-                                <div
-                                  key={optionIdx + section.id}
-                                  className="form-check"
-                                >
-                                  <input
-                                    id={`filter-${section.id}-${optionIdx}`}
-                                    name={`filter-${section.id}`} // Group radio buttons by using the same 'name'
-                                    value={option.value}
-                                    type="radio" // Use 'radio' type instead of 'checkbox'
-                                    defaultChecked={option.checked}
-                                    className="form-check-input"
-                                    onClick={(e) => {
-                                      setOpen([]);
-                                      setnoFilter(true);
-
-                                      dispatchrec({
-                                        type: section.id,
-                                        category: option,
-                                        productdata: products1,
-                                        ArrIndex: indexx,
-                                      });
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`filter-${section.id}-${optionIdx}`}
-                                    className="form-check-label ml-3 text-gray-600"
-                                  >
-                                    {option.label}
-                                  </label>
-                                </div>
-                              ))}
-                            </form>
-                          </div>
-                        </div>
-                      )}
+                    <div key={indexx + "modal-header"}  className="m-2">
+                      <Select 
+                      autoFocus={true}
+                      options={section?.options}
+                      placeholder={section?.id}
+                      defaultInputValue={""}
+                        onChange={(option)=>{
+                        if(section?.id==="category"){
+                          setCategory(option?.value)
+                         } 
+                         if(section?.id==="cuisine"){
+                          setCuisine(option?.value)
+                         } 
+                         if(section?.id==="price"){
+                           setPricerange(option?.value)
+                         }                                
+                         }}
+                         isClearable={true}
+                      />                     
                     </div>
                   ))}
                 </div>
@@ -1200,11 +1195,11 @@ const ProductGrid = memo(function ProductGrid() {
 
               {/* Product grid */}
               <div className="col-lg-9">
-                {state.products.length === 0 && <h3>No Product Found</h3>}
+                {totalProductsLength === 0 && <h3>No Product Found</h3>}
                 <main>
                   {products1.length !== 0 && !eventRunning && (
                     <div className="row mt-4" id="cartmain">
-                      {state.products.map((product, index) => (
+                      {products1.map((product, index) => (
                         <>
                           {product?.VisibleStatus != true && (
                             <div
@@ -1241,7 +1236,7 @@ const ProductGrid = memo(function ProductGrid() {
                                 >
                                   <div
                                     className={`card mb-4 ${
-                                      product.category === "non-vegetarian"
+                                      product?.category === "non-vegetarian"
                                         ? "non-veg"
                                         : "veg"
                                     }`}
@@ -1256,7 +1251,7 @@ const ProductGrid = memo(function ProductGrid() {
                                     <div className="card-body">
                                       <h5
                                         className={`card-title ${
-                                          product.category === "non-vegetarian"
+                                          product?.category === "non-vegetarian"
                                             ? "text-non-veg"
                                             : "text-veg"
                                         }`}
@@ -1387,29 +1382,15 @@ const ProductGrid = memo(function ProductGrid() {
               <li
                 className="page-item page-link"
                 onClick={(e) => {
-                  if (currentpage - 1 > 0) {
-                    let currentpagevar = currentpage - 1;
-                    dispatchrec({
-                      type: "pagination",
-                      products: products1,
-                      currentPagerec: currentpagevar,
-                      itemsPerPage: 6,
-                    });
-                  } else {
-                    let currentpagevar = Math.round(products1.length / 6);
-                    dispatchrec({
-                      type: "pagination",
-                      products: products1,
-                      currentPagerec: currentpagevar,
-                      itemsPerPage: 6,
-                    });
-                    setcurrentpage(Math.round(products1.length / 6));
-                  }
+                  if (skip-limit >= 0) {
+                    setSkip(skip-limit);
+                    setcurrentpage((prevState)=>prevState-1);                   
+                  } 
                 }}
               >
                 Previous
               </li>
-              {[...Array(Math.round(products1.length / 6)).keys()].map(
+              {[...Array(Math.ceil(totalProductsLength / limit)).keys()].map(
                 (value, index) => (
                   <li
                     key={index + "pointer"}
@@ -1417,14 +1398,11 @@ const ProductGrid = memo(function ProductGrid() {
                     className={`page-item page-link ${
                       currentpage == index + 1 ? "bg-warning " : ""
                     }`}
-                    value={value + 1}
-                    onClick={(e) =>
-                      dispatchrec({
-                        type: "pagination",
-                        products: products1,
-                        currentPagerec: e.target.value,
-                        itemsPerPage: 6,
-                      })
+                    value={value }
+                    onClick={(e) =>{
+                      setSkip(index * limit);
+                      setcurrentpage(Math.ceil((index+1)));
+                    }
                     }
                   >
                     {value + 1}
@@ -1434,23 +1412,11 @@ const ProductGrid = memo(function ProductGrid() {
               <li
                 className={`page-item page-link`}
                 onClick={(e) => {
-                  if (Math.round(products1.length / 6) > currentpage) {
-                    dispatchrec({
-                      type: "pagination",
-                      products: products1,
-                      currentPagerec: currentpage + 1,
-                      itemsPerPage: 6,
-                    });
-                  } else {
-                    paginationFun(products1, 1, 6);
-                    dispatchrec({
-                      type: "pagination",
-                      products: products1,
-                      currentPagerec: 1,
-                      itemsPerPage: 6,
-                    });
-                    setcurrentpage(1);
-                  }
+                  if ( totalProductsLength >= skip+limit) {
+                    setSkip(skip+limit);
+                    setcurrentpage((prevState)=>prevState+1);                   
+
+                  } 
                 }}
               >
                 Next
