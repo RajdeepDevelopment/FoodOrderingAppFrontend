@@ -63,7 +63,8 @@ import {
   updateQuantity,
   getCuisineData,
   getPriceRangeData,
-  getCategoryData
+  getCategoryData, 
+  getrestaurentData
 } from "./counterAPI";
 
 const initialState = {
@@ -113,7 +114,8 @@ const initialState = {
   TargetUserEventObjectData: {},
   CategoryData: {},
   PriceRangeData: {},
-  CuisineData: {}
+  CuisineData: {}, 
+  restaurantName: {}
 };
 export const incrementAsync = createAsyncThunk(
   "counter/fetchCount",
@@ -174,6 +176,17 @@ export const getCuisineDataAsync = createAsyncThunk(
     return response;
   }
 );
+
+export const getrestaurentDataAsync = createAsyncThunk(
+  "counter/getrestaurentData",
+  async (id) => {
+    const response = await getrestaurentData(id);
+    // The value we return becomes the `fulfilled` action payload
+    return response;
+  }
+);
+
+//getrestaurentData
 export const deleteOutForDeliveryAsync = createAsyncThunk(
   "counter/deleteOutForDelivery",
   async (id) => {
@@ -1566,9 +1579,16 @@ export const counterSlice = createSlice({
         state.status = "idle";
         state.CuisineData
         = action.payload;
+      }).addCase(getrestaurentDataAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getrestaurentDataAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.restaurantName
+        = action.payload;
       });
 
-      //getCategoryDataAsync, getPriceRangeDataAsync, getCuisineDataAsync
+      //getCategoryDataAsync, getPriceRangeDataAsync, getCuisineDataAsync, getrestaurentDataAsync
 
   },
 });
@@ -1633,9 +1653,11 @@ export const selectCuisineData = (state) =>
   state.counter.PriceRangeData;
   export const selectCategoryData = (state) =>
   state.counter.CategoryData;
+  export const selectrestaurantName= (state) =>
+  state.counter.restaurantName;
   export const selectunReadNotificationData = (state) =>
   state.counter.unReadNotification;
-
+//restaurantName
 export const incrementIfOdd = (amount) => (dispatch, getState) => {
   const currentValue = selectCount(getState());
   if (currentValue % 2 === 1) {

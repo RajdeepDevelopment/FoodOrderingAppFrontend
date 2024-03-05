@@ -9,7 +9,7 @@ function isMoreThanThreeDays(timestamp) {
     return false;
   }
 }
-
+let locationFetchdata = ""
 // A mock function to mimic making an async request for data
 export function fetchCount(amount = 1) {
   return new Promise((resolve) =>
@@ -20,7 +20,9 @@ export function fetchCount(amount = 1) {
 
 export function getProductData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS+ `${query}`);
+   let locationFetchdata = await fetch("https://ipapi.co/json");
+    locationFetchdata = await locationFetchdata.json();
+    const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS+ `${query}&city=${locationFetchdata?.city}`);
     const data = await response.json();
 
     resolve(data);
@@ -29,6 +31,14 @@ export function getProductData(query) {
 export function getCategoryData(query) {
   return new Promise(async (resolve) => {
     const response = await fetch(`http://localhost:8000/productssection/uniqueCategory`);
+    const data = await response.json();
+
+    resolve(data);
+  });
+}
+export function getrestaurentData(query) {
+  return new Promise(async (resolve) => {
+    const response = await fetch(`http://localhost:8000/productssection/uniqueRestaurent`);
     const data = await response.json();
 
     resolve(data);

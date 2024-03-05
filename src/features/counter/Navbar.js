@@ -1,5 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
+import {BsMoonStars} from 'react-icons/bs';
+
 import {
   getCartDataAsync,
   getCreateUserAddressAsync,
@@ -17,6 +19,8 @@ import {
   selectunReadNotificationData,
   selectuser,
 } from "./counterSlice";
+import {HiSun} from 'react-icons/hi';
+
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import img from "../../assets/food8239850.png";
@@ -54,7 +58,7 @@ function Navbar() {
       dispatch(getCartDataAsync(currentUser.uid));
     }
   }, [dispatch, preUserData]);
-
+  const [toggleSwitchValue, setToggleSwitch] = useState(true);
   const [lati, setlati] = useState(-1);
   const [longi, setlongi] = useState(-1);
   function getCurrentUserLocation() {
@@ -162,6 +166,17 @@ function Navbar() {
       }
     }
   }
+  const toggleSwitchHandler = e => {
+    e.stopPropagation();
+    if (toggleSwitchValue) {
+      document.body.style.backgroundColor = "black";
+      document.body.style.color = "white";
+    } else {
+      document.body.style.backgroundColor = "white";
+      document.body.style.color = "black";
+    }
+    setToggleSwitch(!toggleSwitchValue);
+  };
   const customIconn = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/2838/2838912.png",
     iconSize: [38, 38],
@@ -490,6 +505,16 @@ function Navbar() {
 
                 //AssignTaskForDelivery
               }
+               <div className="mode-toggle mx-3"  >
+            <label className="switch">
+                  <input type="checkbox" 
+                  checked={toggleSwitchValue}
+                  onChange={toggleSwitchHandler}
+                  />
+                <span style={{width: "40px", height: "20px"}} className="slider"></span>
+                </label>
+
+              </div>
             </ul>
             <div
               className="mx-2"
@@ -511,10 +536,9 @@ function Navbar() {
               >
                 <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
               </svg>
+
             </div>
-            <span className="button mx-5" onClick={toggleDarkMode}>
-              {darkMode ? <DarkModeIcon /> : <LightModeIcon />}
-            </span>
+            
 
             {slug == null && (
               <form

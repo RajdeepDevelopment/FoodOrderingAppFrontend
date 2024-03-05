@@ -2601,6 +2601,108 @@ background: #eee;
   background: #eee;
 }
 
+/* Dark mode/ */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #f4f4f5;
+  border: 1px solid var(--border-color);
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: var(--size-of-icon,1.4em);
+  width: var(--size-of-icon,1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset,0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
+  ;
+ transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #303136;
+}
+
+input:checked + .slider:before {
+  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+  background: #303136;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow: inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb;
+}
+  .mode-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .mode-toggle .mode-title {
+    font-size: 13px;
+    font-weight: var(--heading-font-weight);
+  }
+  
+  .mode-toggle .mode-title svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 10px;
+    fill: var(--main-font-color);
+  }
+  
+  .toggle-control {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 12px;
+    user-select: none;
+  }
+  
+  .toggle-control input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+  
+  .toggle-control input:checked ~ .control {
+    background: var(--toggle-background-color-on);
+  }
+  
+  .toggle-control input:checked ~ .control::after {
+    left: 16px;
+    border: 1px solid var(--toggle-control-border);
+  }
+  
+  .toggle-control .control {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 16px;
+    width: 30px;
+    border-radius: 30px;
+    background-color: var(--toggle-background-color-off);
+    transition: background-color 0.15s ease-in;
+  }
+  
+  .toggle-control .control::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 30px;
+    background-color: var(--toggle-control-color);
+    transition: left 0.15s ease-in;
+  }
 /* UserActivity  */
 .product-grid9,.product-grid9 .product-image9{position:relative}
 .product-grid9{font-family:Poppins,sans-serif;z-index:1}

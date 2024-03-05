@@ -35,6 +35,7 @@ import {
   getUpdateEventObjectDataAsync,
   getUpdateProductAsync,
   getUpdateUserAddressAsync,
+  getrestaurentDataAsync,
   getsearchdataResetAsync,
   getuniqueRestaurantDataAsync,
   selectCategoryData,
@@ -46,6 +47,7 @@ import {
   selectTotalProducts,
   selecteventObjectData,
   selectprevCompleteData,
+  selectrestaurantName,
   selectsearchBarIndicator,
   selectsearchdata,
   selectuser,
@@ -74,12 +76,12 @@ const ProductGrid = memo(function ProductGrid() {
   const CuisineData =  useSelector(selectCuisineData)
   const PriceRangeData =  useSelector(selectPriceRangeData)
   const CategoryData =  useSelector(selectCategoryData)
+  const restaurantNameData =  useSelector(selectrestaurantName)
 
-  // selectCuisineData, selectPriceRangeData, selectCategoryData
+  // selectCuisineData, selectPriceRangeData, selectCategoryData, selectrestaurantName
   //Selectors For Redux Thunk............
 
   // States variable
-
   const [currentpage, setcurrentpage] = useState(1);
   const [indexFilter, setindexFilter] = useState(0);
   const [locCpmplete, setlocComplete] = useState(false);
@@ -105,10 +107,11 @@ const ProductGrid = memo(function ProductGrid() {
   const [category, setCategory] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [filters, setFilters] = useState([]);
+  const [restaurents, setRestaurents] = useState("");
 
-useEffect(()=>{
-  console.log("filters", filters)
-}, [filters])
+ useEffect(()=>{
+  console.log("filters", restaurents)
+  }, [restaurents])
   // States Variable........
 
   //normal variable
@@ -179,6 +182,7 @@ useEffect(()=>{
     dispatch(getCuisineDataAsync());
     dispatch(getPriceRangeDataAsync());
     dispatch(getCategoryDataAsync())
+    dispatch(getrestaurentDataAsync())
   }, [])
 
   //getProductForLocationAsync
@@ -545,17 +549,16 @@ useEffect(()=>{
   }
 
   useEffect(() => {
- let queryString = ""
- if(priceRange && priceRange!==""){
-  queryString = queryString + `&priceRange=${priceRange}`
- }
-
- if(cuisine &&cuisine!==""){
-  queryString = queryString + `&cuisine=${cuisine}`
- }
- if(category && category!==""){
-  queryString = queryString + `&category=${category}`
- }
+    let queryString = ""
+    if(priceRange && priceRange!==""){
+      queryString = queryString + `&priceRange=${priceRange}`
+    }
+    if(cuisine &&cuisine!==""){
+      queryString = queryString + `&cuisine=${cuisine}`
+    }
+    if(category && category!==""){
+      queryString = queryString + `&category=${category}`
+    }
    if(sort !==""){
     if (sort == "Most Popular") {
       queryString = queryString + `&_sort=${"rating"}&_order=${"desc"}`   
@@ -571,26 +574,31 @@ useEffect(()=>{
      if (sort == "Price: High to Low") {
       queryString = queryString + `&_sort=${"price"}&_order=${"desc"}`   
     }
+   
    }
+   if(restaurents !==""){
+    queryString = queryString + `&restaurantName=${restaurents}`   
+
+  }
  
    dispatch(getProductDataAsync(`?skip=${skip}&limit=${limit}`+queryString));
-  }, [dispatch, filters.options?.checked, limit,skip, priceRange,sort, cuisine, category]);
+  }, [dispatch, filters.options?.checked, limit,skip, priceRange,sort, cuisine, category, restaurents]);
   useEffect(()=>{
     setSkip(0);
     setcurrentpage(1);                   
 
   }, [priceRange,sort, cuisine, category])
 
-  useEffect(() => {
-    if (locCpmplete) {
-      if (
-        previousUserdata.length != 0 &&
-        previousUserdata[0]?.Access != "Admin"
-      ) {
-        dispatch(getProductForLocationAsync(previousUserdata[0].city));
-      }
-    }
-  }, [previousUserdata, locCpmplete]);
+  // useEffect(() => {
+  //   if (locCpmplete) {
+  //     if (
+  //       previousUserdata.length != 0 &&
+  //       previousUserdata[0]?.Access != "Admin"
+  //     ) {
+  //       dispatch(getProductForLocationAsync(previousUserdata[0].city));
+  //     }
+  //   }
+  // }, [previousUserdata, locCpmplete]);
 
   function noFilterForProducts() {
     if (indexFilter == -1) {
@@ -1004,7 +1012,7 @@ useEffect(()=>{
                             }`}
                           >
                             <div className="space-y-6">
-                              {section.options.map((option, optionIdx) => (
+                               {section.options.map((option, optionIdx) => (
                                 <div
                                   key={optionIdx + "modal-body"}
                                   className="form-check"
@@ -1115,66 +1123,426 @@ useEffect(()=>{
 
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <section className="pb-24 pt-6">
-            <div className="d-flex justify-content-end border-bottom border-gray-200 pb-3 pt-3 mt-2  ">
-              <div className="d-flex align-items-center ">
-                <div className="dropdown">
+
+            <>
+  {/*Main Navigation*/}
+ 
+  {/* sidebar + content */}
+  <section className="">
+     <div className="">
+      <div className="row">
+        {/* sidebar */}
+        <div className="col-lg-3">
+          {/* Toggle button */}
+          <button
+            className="btn btn-outline-secondary mb-3 w-100 d-lg-none"
+            type="button"
+            data-mdb-toggle="collapse"
+            data-mdb-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span>Show filter</span>
+          </button>
+          {/* Collapsible wrapper */}
+          <div
+            className="collapse card d-lg-block mb-5"
+            id="navbarSupportedContent"
+          >
+            <div className="accordion" id="accordionPanelsStayOpenExample">
+              <div className="accordion-item">
+                {/* <h2 className="accordion-header" id="headingOne">
                   <button
-                    className="dropdown-toggle btn btn-outline-dark me-3"
+                    className="accordion-button text-dark bg-light"
                     type="button"
-                    id="sortDropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#panelsStayOpen-collapseOne"
+                    aria-expanded="true"
+                    aria-controls="panelsStayOpen-collapseOne"
                   >
-                    Sort
+                    Related items
                   </button>
-                  <ul className="dropdown-menu" aria-labelledby="sortDropdown">
-                    {sortOptions.map((option, index) => (
-                      <li key={index + "dropdown-item"}>
-                        <li
-                          className="dropdown-item"
-                          onClick={() => {
-                            setSort(option.name)  
-                          }}
-                        >
-                          {option.name}
-                        </li>
+                </h2> */}
+                {/* <div
+                  id="panelsStayOpen-collapseOne"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingOne"
+                >
+                  <div className="accordion-body">
+                    <ul className="list-unstyled">
+                      <li>
+                        <a href="#" className="text-dark">
+                          Electronics{" "}
+                        </a>
                       </li>
-                    ))}
-                  </ul>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Home items{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Books, Magazines{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Men's clothing{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Interiors items{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Underwears{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Shoes for men{" "}
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="text-dark">
+                          Accessories{" "}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div> */}
+              </div>
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingTwo">
+                  <button
+                    className="accordion-button text-dark bg-light"
+                    type="button"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#panelsStayOpen-collapseTwo"
+                    aria-expanded="true"
+                    aria-controls="panelsStayOpen-collapseTwo"
+                  >
+                    Restaurents
+                  </button>
+                </h2>
+                <div style={{overflow: "auto", height: "200px"}}
+                  id="panelsStayOpen-collapseTwo"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingTwo"
+                >
+                  <div className="accordion-body">
+                    <div>
+                      {/* Checked checkbox */}
+                      {restaurantNameData?.data?.map((item, index)=>(
+                     <div className="form-check">
+                     <input onChange={(e)=>{
+                      if(e.target.checked ==true){
+                        const temp = e.target.value.split(" ").join("-")
+                        setRestaurents(temp)
+                      }else{
+                        setRestaurents("")
+                      }
+                     }}
+                       className="form-check-input"
+                       type="checkbox"
+                       defaultValue=""
+                       id={"flexCheckChecked1" +index}
+                       defaultChecked=""
+                       value={item.value}
+                     />
+                     <label
+                       className="form-check-label"
+                       htmlFor="flexCheckChecked1"
+                     >
+                       {item.label}
+                     </label>
+                     <span className="badge badge-secondary float-end">
+                       120
+                     </span>
+                   </div>
+                      ))}
+                      
+                      {/* Checked checkbox */}
+                     
+                     
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingThree">
+                  <button
+                    className="accordion-button text-dark bg-light"
+                    type="button"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#panelsStayOpen-collapseThree"
+                    aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseThree"
+                  >
+                    Price
+                  </button>
+                </h2>
+                <div
+                  id="panelsStayOpen-collapseThree"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingThree"
+                >
+                  <div className="accordion-body">
+                    <div className="range">
+                      <input
+                        type="range"
+                        className="form-range"
+                        id="customRange1"
+                      />
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col-6">
+                        <p className="mb-0">Min</p>
+                        <div className="form-outline">
+                          <input
+                            type="number"
+                            id="typeNumber"
+                            className="form-control"
+                          />
+                          <label className="form-label" htmlFor="typeNumber">
+                            $0
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-6">
+                        <p className="mb-0">Max</p>
+                        <div className="form-outline">
+                          <input
+                            type="number"
+                            id="typeNumber"
+                            className="form-control"
+                          />
+                          <label className="form-label" htmlFor="typeNumber">
+                            $1,0000
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-white w-100 border border-secondary"
+                    >
+                      apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingThree">
+                  <button
+                    className="accordion-button text-dark bg-light"
+                    type="button"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#panelsStayOpen-collapseFour"
+                    aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseFour"
+                  >
+                    Size
+                  </button>
+                </h2>
+                <div
+                  id="panelsStayOpen-collapseFour"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingThree"
+                >
+                  <div className="accordion-body">
+                    <input
+                      type="checkbox"
+                      className="btn-check border justify-content-center"
+                      id="btn-check1"
+                      defaultChecked=""
+                      autoComplete="off"
+                    />
+                    <label
+                      className="btn btn-white mb-1 px-1"
+                      style={{ width: 60 }}
+                      htmlFor="btn-check1"
+                    >
+                      XS
+                    </label>
+                    <input
+                      type="checkbox"
+                      className="btn-check border justify-content-center"
+                      id="btn-check2"
+                      defaultChecked=""
+                      autoComplete="off"
+                    />
+                    <label
+                      className="btn btn-white mb-1 px-1"
+                      style={{ width: 60 }}
+                      htmlFor="btn-check2"
+                    >
+                      SM
+                    </label>
+                    <input
+                      type="checkbox"
+                      className="btn-check border justify-content-center"
+                      id="btn-check3"
+                      defaultChecked=""
+                      autoComplete="off"
+                    />
+                    <label
+                      className="btn btn-white mb-1 px-1"
+                      style={{ width: 60 }}
+                      htmlFor="btn-check3"
+                    >
+                      LG
+                    </label>
+                    <input
+                      type="checkbox"
+                      className="btn-check border justify-content-center"
+                      id="btn-check4"
+                      defaultChecked=""
+                      autoComplete="off"
+                    />
+                    <label
+                      className="btn btn-white mb-1 px-1"
+                      style={{ width: 60 }}
+                      htmlFor="btn-check4"
+                    >
+                      XXL
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingThree">
+                  <button
+                    className="accordion-button text-dark bg-light"
+                    type="button"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#panelsStayOpen-collapseFive"
+                    aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseFive"
+                  >
+                    Ratings
+                  </button>
+                </h2>
+                <div
+                  id="panelsStayOpen-collapseFive"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingThree"
+                >
+                  <div className="accordion-body">
+                    {/* Default checkbox */}
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        defaultValue=""
+                        id="flexCheckDefault"
+                        defaultChecked=""
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="flexCheckDefault"
+                      >
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                      </label>
+                    </div>
+                    {/* Default checkbox */}
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        defaultValue=""
+                        id="flexCheckDefault"
+                        defaultChecked=""
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="flexCheckDefault"
+                      >
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-secondary" />
+                      </label>
+                    </div>
+                    {/* Default checkbox */}
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        defaultValue=""
+                        id="flexCheckDefault"
+                        defaultChecked=""
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="flexCheckDefault"
+                      >
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-secondary" />
+                        <i className="fas fa-star text-secondary" />
+                      </label>
+                    </div>
+                    {/* Default checkbox */}
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        defaultValue=""
+                        id="flexCheckDefault"
+                        defaultChecked=""
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="flexCheckDefault"
+                      >
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-warning" />
+                        <i className="fas fa-star text-secondary" />
+                        <i className="fas fa-star text-secondary" />
+                        <i className="fas fa-star text-secondary" />
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="row">
-              {/* Filters */}
-              <div className="col-lg-3 mt-2">
-                <div className="d-flex flex-column justify-content-end">
-                  <h3 className="sr-only bhag ">Filters</h3>
-                  {noFilter && (
-                    <div className=" bhag mb-2">
-                      <div
-                        className="btn btn-primary mt-3 mx-5"
-                        onClick={(e) => {
-                          setindexFilter(-1);
-                          setnoFilter(false);
-                          e.stopPropagation();
-                          noFilterForProducts();
-                        }}
-                      >
-                        {" "}
-                        NO Filters
-                      </div>
-                    </div>
-                  )}
-                 {categorySvg()}
-
-                  {filters.map((section, indexx) => (
-                    <div key={indexx + "modal-header"}  className="m-2">
+          </div>
+        </div>
+        {/* sidebar */}
+        {/* content */}
+        <div className="col-lg-9">
+          <header className="d-sm-flex align-items-center border-bottom mb-4 pb-3">
+            <strong className="d-block py-2">{totalProductsLength} Items found </strong>
+            <div className="ms-auto mx-2" >
+              <select className="form-select d-inline-block w-auto border pt-1" onChange={(e)=>{
+                  setSort(e.target.value)  
+              }}> 
+              {sortOptions.map((option, index) => (
+                      <option value={option.name} key={index + "dropdown-item"}>
+                         {option.name}
+                      </option>
+                    ))}
+              </select>
+             
+            </div>
+            {filters.map((section, indexx) => (
+                    <div key={indexx + "modal-header"} className="mx-2 d-inline-block w-auto border">
                       <Select 
                       autoFocus={true}
                       options={section?.options}
                       placeholder={section?.id}
                       defaultInputValue={""}
+                      
                         onChange={(option)=>{
                         if(section?.id==="category"){
                           setCategory(option?.value)
@@ -1190,11 +1558,10 @@ useEffect(()=>{
                       />                     
                     </div>
                   ))}
-                </div>
-              </div>
 
-              {/* Product grid */}
-              <div className="col-lg-9">
+          </header>
+         
+          <div className="">
                 {totalProductsLength === 0 && <h3>No Product Found</h3>}
                 <main>
                   {products1.length !== 0 && !eventRunning && (
@@ -1300,7 +1667,6 @@ useEffect(()=>{
                                 </Link>
                               )}
 
-                              {/* previousUserdata[0]?.userid=== product.uid &&  */}
                               {previousUserdata[0]?.Access === "Admin" && (
                                 <div
                                   className="btn-group mb-2 bhag"
@@ -1367,15 +1733,9 @@ useEffect(()=>{
                     {!ChatOpen ? "Chats" : "Close"}
                   </button>
                 </main>
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-
-      {/* pagination */}
-
-      {open == null ? (
+              </div> 
+      
+         {/* pagination */}
         <section className="mt-4 pagination-box" style={{ cursor: "pointer" }}>
           <nav aria-label="Page navigation example">
             <ul className="pagination">
@@ -1424,9 +1784,19 @@ useEffect(()=>{
             </ul>
           </nav>
         </section>
-      ) : (
-        <></>
-      )}
+          <hr />
+        </div>
+      </div>
+    </div>
+  </section>
+
+</>
+
+          </section>
+        </main>
+      </div>
+
+      
 
       {/* Chat PopUp  */}
     </div>
@@ -1434,3 +1804,4 @@ useEffect(()=>{
 });
 
 export default ProductGrid;
+
