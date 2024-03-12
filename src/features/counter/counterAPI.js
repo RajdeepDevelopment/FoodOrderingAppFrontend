@@ -20,17 +20,47 @@ export function fetchCount(amount = 1) {
 
 export function getProductData(query) {
   return new Promise(async (resolve) => {
-   let locationFetchdata = await fetch("https://ipapi.co/json");
-    locationFetchdata = await locationFetchdata.json();
-    const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS+ `${query}&city=${locationFetchdata?.city}`);
-    const data = await response.json();
-
-    resolve(data);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            LocationData = await LocationData.json();
+            const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/products" + `${query}&city=${LocationData.address.city}`);
+            const data = await response.json();
+            resolve(data);
+          } catch (error) {
+            console.error("Error fetching product data:", error);
+            // Fallback to default city
+            const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS + `${query}`);
+            const data = await response.json();
+            resolve(data);
+          }
+        },
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Fallback to default city
+          const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS + `${query}`);
+          const data = await response.json();
+          resolve(data);
+        }
+      );
+    } else {
+      // Geolocation not supported
+      console.error("Geolocation not supported.");
+      // Fallback to default city
+      const response = await fetch(process.env.REACT_APP_ALL_PRODUCTS + `${query}`);
+      const data = await response.json();
+      resolve(data);
+    }
   });
 }
+
 export function getCategoryData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`http://localhost:8000/productssection/uniqueCategory`);
+    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory`);
     const data = await response.json();
 
     resolve(data);
@@ -38,15 +68,35 @@ export function getCategoryData(query) {
 }
 export function getrestaurentData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`http://localhost:8000/productssection/uniqueRestaurent`);
-    const data = await response.json();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        LocationData = await LocationData.json();
+        const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurent" +`?city=${LocationData.address.city}`);
+        const data = await response.json();
+        resolve(data);
+      }, async () => {
+        // If user denies or blocks location access
+        const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurent`);
+        const data = await response.json();
+        resolve(data);
+      });
+    } else {
+      // Geolocation not supported
+      const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurent`);
+      const data = await response.json();
+      resolve(data);
+    }
+  
 
-    resolve(data);
   });
 }
+
 export function getPriceRangeData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`http://localhost:8000/productssection/uniquePriceRange`);
+    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange`);
     const data = await response.json();
 
     resolve(data);
@@ -54,7 +104,7 @@ export function getPriceRangeData(query) {
 }
 export function getCuisineData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`http://localhost:8000/productssection/uniqueCuisine`);
+    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine`);
     const data = await response.json();
     resolve(data);
   });
@@ -124,7 +174,7 @@ export function getAllUserData() {
 export function getAllNotAddedToEmailBoxUser() {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/usersection/user?EmailBox=NotAdded"
+      "https://foodorderingapp-mfqa.onrender.com/usersection/user?EmailBox=NotAdded"
     );
     const data = await response.json();
 
@@ -144,7 +194,7 @@ export function getAllAddedToEmailBoxUser() {
 //getAllAddedToEmailBoxUser
 export function getAllUserSearchData(searchData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/usersection/userSearch?q=" + searchData);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/usersection/userSearch?q=" + searchData);
     const data = await response.json();
 
     resolve(data.data);
@@ -154,7 +204,7 @@ export function getAllUserSearchData(searchData) {
 export function getAllUserNotAddedOnEmailSearchData(searchData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/usersection/userSearch?EmailBox=NotAdded&&q=" + searchData
+      "https://foodorderingapp-mfqa.onrender.com/usersection/userSearch?EmailBox=NotAdded&&q=" + searchData
     );
     const data = await response.json();
     resolve(data.data);
@@ -171,7 +221,7 @@ export function getTargetProduct(id) {
 export function getSimilerProduct(category, city) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      `http://localhost:8000/productssection/products/?category=${category}&city=${city}`
+      `https://foodorderingapp-mfqa.onrender.com/productssection/products/?category=${category}&city=${city}`
     );
     const data = await response.json();
     resolve(data.data);
@@ -179,7 +229,7 @@ export function getSimilerProduct(category, city) {
 }
 export function getProductForLocation(city) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/productssection/products/?city=" + city);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/products/?city=" + city);
     const data = await response.json();
     resolve(data.data);
   });
@@ -187,15 +237,23 @@ export function getProductForLocation(city) {
 
 export function getSearchResult(dataaa) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/productssection/productsSearch?q=" + dataaa);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/productsSearch?q=" + dataaa);
     const data = await response.json();
     resolve(data.data);
   });
 }
+export function getTargetSearchResult(dataaa) {
+  return new Promise(async (resolve) => {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/productsSearch?q=" + dataaa);
+    const data = await response.json();
+    resolve(data);
+  });
+}
+
 
 export function getProductPost(NewProductsData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/productssection/products/", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/products/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -210,7 +268,7 @@ export function getProductPost(NewProductsData) {
 export function getUpdateProduct(productData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/productssection/products",
+      "https://foodorderingapp-mfqa.onrender.com/productssection/products",
       {
         method: "PATCH",
         headers: {
@@ -227,7 +285,7 @@ export function getUpdateProduct(productData) {
 export function getUpdateTargetProduct(productData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/productssection/products",
+      "https://foodorderingapp-mfqa.onrender.com/productssection/products",
       {
         method: "PATCH",
         headers: {
@@ -243,7 +301,7 @@ export function getUpdateTargetProduct(productData) {
 }
 export function getUpdateApplyJob(ApplyJob) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/Apply/" + ApplyJob.id, {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/applyjob/Apply/" + ApplyJob.id, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -257,7 +315,7 @@ export function getUpdateApplyJob(ApplyJob) {
 }
 export function getreviewPost(reviewData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/reviewsection/review", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/reviewsection/review", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -307,7 +365,7 @@ export function getreviewPost(reviewData) {
 
 export function getNotificationsPost(notificationsData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/notificationsection/notification", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/notificationsection/notification", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -321,7 +379,7 @@ export function getNotificationsPost(notificationsData) {
 export function getNotificationsDelete(itemId) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/notificationsection/notification/" + itemId,
+      "https://foodorderingapp-mfqa.onrender.com/notificationsection/notification/" + itemId,
       {
         method: "DELETE",
       }
@@ -332,12 +390,12 @@ export function getNotificationsDelete(itemId) {
 export function getNotifitationData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      `http://localhost:8000/notificationsection/notification?for=${id}&_sort=time&_order=desc`
+      `https://foodorderingapp-mfqa.onrender.com/notificationsection/notification?for=${id}&_sort=time&_order=desc`
     );
     const data = await response.json();
 
     const Unread = await fetch(
-      `http://localhost:8000/notificationsection/notification?for=${id}&status=unRead&_sort=time&_order=desc`
+      `https://foodorderingapp-mfqa.onrender.com/notificationsection/notification?for=${id}&status=unRead&_sort=time&_order=desc`
     );
     const data2 = await Unread.json();
     const deleteArrayObject = await data.data.filter((element) => {
@@ -353,7 +411,7 @@ export function getNotifitationData(id) {
 export function getNotificationsUpdate(updateData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/notificationsection/notification/" + updateData._id,
+      "https://foodorderingapp-mfqa.onrender.com/notificationsection/notification/" + updateData._id,
       {
         method: "PATCH",
         headers: {
@@ -384,7 +442,7 @@ export function getNewMeetPost(postData) {
 
 export function getJobDataPost(ApplyData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/Apply", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/applyjob/Apply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -398,7 +456,7 @@ export function getJobDataPost(ApplyData) {
 
 export function getReviewData(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/reviewsection/review/"+id);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/reviewsection/review/"+id);
     const data = await response.json();
     resolve(data.data);
   });
@@ -407,7 +465,7 @@ export function getReviewData(id) {
 export function CheckReviewData(checkData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      `http://localhost:8000/reviewsection/review?productId=${checkData.id}&&postUser=${checkData.uid}`
+      `https://foodorderingapp-mfqa.onrender.com/reviewsection/review?productId=${checkData.id}&&postUser=${checkData.uid}`
     );
     const data = await response.json();
 
@@ -418,7 +476,7 @@ export function CheckReviewData(checkData) {
 
 export function getAllAppliedData() {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/Apply");
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/applyjob/Apply");
     const data = await response.json();
     resolve(data.data);
   });
@@ -426,7 +484,7 @@ export function getAllAppliedData() {
 
 export function getAllAppliedDataForSearch(searchData) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/ApplySearch?q=" + searchData);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/applyjob/ApplySearch?q=" + searchData);
     const data = await response.json();
     resolve(data.data);
   });
@@ -442,7 +500,7 @@ export function getJobData() {
 export function getReviewDataForTargerUser(postUser) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/reviewsection/review?postUser=" + postUser
+      "https://foodorderingapp-mfqa.onrender.com/reviewsection/review?postUser=" + postUser
     );
     const data = await response.json();
 
@@ -453,7 +511,7 @@ export function getReviewDataForTargerUser(postUser) {
 export function getDeliveryAppliedReq(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/ordersection/order?DeliveryReqBy=" + id
+      "https://foodorderingapp-mfqa.onrender.com/ordersection/order?DeliveryReqBy=" + id
     );
     const data = await response.json();
 
@@ -475,7 +533,7 @@ export function getOrderDelivered(id) {
 export function getCreateUser(userAddressData) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("http://localhost:8000/usersection/user", {
+      const response = await fetch("https://foodorderingapp-mfqa.onrender.com/usersection/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -498,7 +556,7 @@ export function getCreateUser(userAddressData) {
 export function getUpdateUserAddress(newAddressData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/usersection/user",
+      "https://foodorderingapp-mfqa.onrender.com/usersection/user",
       {
         method: "PATCH",
         headers: {
@@ -516,7 +574,7 @@ export function getUpdateUserAddress(newAddressData) {
 export function getUpdateReviewBox(checkData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      `http://localhost:8000/reviewsection/review/${checkData.id}`,
+      `https://foodorderingapp-mfqa.onrender.com/reviewsection/review/${checkData.id}`,
       {
         method: "PATCH",
         headers: {
@@ -536,7 +594,7 @@ export function getUpdateReviewBox(checkData) {
 export function getUpdateOrderStatus(orderData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/ordersection/order/" + orderData._id,
+      "https://foodorderingapp-mfqa.onrender.com/ordersection/order/" + orderData._id,
       {
         method: "PATCH",
         headers: {
@@ -555,7 +613,7 @@ export function getUpdateOrderStatus(orderData) {
 
 export function getCreateOrder(Orderdata) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/ordersection/order", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/ordersection/order", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -606,7 +664,7 @@ export function getCreateOrder(Orderdata) {
 
 export function getCreateCart(Cartdata) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/cartsection/cart", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/cartsection/cart", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -621,7 +679,7 @@ export function getCreateCart(Cartdata) {
 
 export function getUserMessegePost(UserMess) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/restaurantsection/restaurants", {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/restaurantsection/restaurants", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -667,7 +725,7 @@ export function getOrderDeliveredPost(Postdata) {
 export function getOutForDelivery(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/OutForDeliverySection/OutForDelivery?for=" + id
+      "https://foodorderingapp-mfqa.onrender.com/OutForDeliverySection/OutForDelivery?for=" + id
     );
     const data = await response.json();
 
@@ -678,7 +736,7 @@ export function getOutForDelivery(id) {
 export function getUserMessToResData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/restaurantsection/restaurants?dbAdd=" + id
+      "https://foodorderingapp-mfqa.onrender.com/restaurantsection/restaurants?dbAdd=" + id
     );
     const data = await response.json();
 
@@ -688,7 +746,7 @@ export function getUserMessToResData(id) {
 
 export function updateQuantity(updateQnt) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/cartsection/cart" , {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/cartsection/cart" , {
       method: "PATCH",
       body: JSON.stringify(updateQnt),
       headers: { "content-type": "application/json" },
@@ -701,22 +759,29 @@ export function updateQuantity(updateQnt) {
 
 export function getCartData(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/cartsection/cart?userid=" + id);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/cartsection/cart?userid=" + id);
     const data = await response.json();
     resolve(data.data);
   });
 }
 export function getRestaurantsData(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/restaurantsection/restaurants?for=" + id);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/restaurantsection/restaurants?for=" + id);
     const data = await response.json();
     resolve(data.data);
   });
 }
-
+export function getRestaurantsWithProducts() {
+  return new Promise(async (resolve) => {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurantsWithProduct" );
+    const data = await response.json();
+    console.log(data)
+    resolve(data.data);
+  });
+}
 export function getPreviousUserData(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/usersection/user?userid=" + id);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/usersection/user?userid=" + id);
     const data = await response.json();
     resolve(data.data);
   });
@@ -724,7 +789,7 @@ export function getPreviousUserData(id) {
 
 export function getDeliveryUserData(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/usersection/user?Access=" + id);
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/usersection/user?Access=" + id);
     const data = await response.json();
     resolve(data.data);
   });
@@ -744,7 +809,7 @@ export function getCheckPostUserBox(id) {
 export function getOrderData(id) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      `http://localhost:8000/ordersection/order?belngto=${id}&_sort=OrderPlacedTime&_order=desc`
+      `https://foodorderingapp-mfqa.onrender.com/ordersection/order?belngto=${id}&_sort=OrderPlacedTime&_order=desc`
     );
     const data = await response.json();
     resolve(data.data);
@@ -753,7 +818,7 @@ export function getOrderData(id) {
 
 export function getOrderDataforDeliveryBoy() {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/ordersection/order?DeliveryReq");
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/ordersection/order?DeliveryReq");
     const data = await response.json();
     resolve(data.data);
   });
@@ -761,7 +826,7 @@ export function getOrderDataforDeliveryBoy() {
 
 export function deleteCartItem(itemId) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/cartsection/cart/" + itemId, {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/cartsection/cart/" + itemId, {
       method: "DELETE",
     });
 
@@ -771,7 +836,7 @@ export function deleteCartItem(itemId) {
 
 export function deleteApplyJob(itemId) {
   return new Promise(async (resolve) => {
-    const response = await fetch("http://localhost:8000/applyjob/Apply/" + itemId, {
+    const response = await fetch("https://foodorderingapp-mfqa.onrender.com/applyjob/Apply/" + itemId, {
       method: "DELETE",
     });
     const data = await response.json();
@@ -783,7 +848,7 @@ export function deleteApplyJob(itemId) {
 export function OutForDeliveryItemDelete(itemId) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/OutForDeliverySection/OutForDelivery/" + itemId,
+      "https://foodorderingapp-mfqa.onrender.com/OutForDeliverySection/OutForDelivery/" + itemId,
       {
         method: "DELETE",
       }
@@ -799,7 +864,7 @@ export function OutForDeliveryItemDelete(itemId) {
 export function deleteOutForDelivery(itemId) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/OutForDeliverySection/OutForDelivery/" + itemId,
+      "https://foodorderingapp-mfqa.onrender.com/OutForDeliverySection/OutForDelivery/" + itemId,
       {
         method: "DELETE",
       }
@@ -813,7 +878,7 @@ export function deleteOutForDelivery(itemId) {
 export function getCurrentDeliveryItem(fordata) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/OutForDeliverySection/OutForDelivery?currentDelivery=true&for=" + fordata
+      "https://foodorderingapp-mfqa.onrender.com/OutForDeliverySection/OutForDelivery?currentDelivery=true&for=" + fordata
     );
     const data = await response.json();
 
@@ -823,7 +888,7 @@ export function getCurrentDeliveryItem(fordata) {
 export function getUpdateOutForDelivery(UpdateData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/OutForDeliverySection/OutForDelivery/" + UpdateData.id,
+      "https://foodorderingapp-mfqa.onrender.com/OutForDeliverySection/OutForDelivery/" + UpdateData.id,
       {
         method: "PATCH",
         headers: {
@@ -864,7 +929,7 @@ export function getEventObjectPostData(Postdata) {
 export function getUpdateEventObjectData(UpdateData) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "http://localhost:8000/EventObjectSection/EventObjectData",
+      "https://foodorderingapp-mfqa.onrender.com/EventObjectSection/EventObjectData",
       {
         method: "PATCH",
         headers: {

@@ -60,6 +60,16 @@ const date = new Date();
 export function ScrollTotop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+function lowestDecimalValue(value) {
+  const integerPart = Math.floor(value);
+  const decimalPart = value - integerPart;
+  
+  if (decimalPart < 0.9) {
+      return integerPart;
+  } else {
+      return Math.ceil(value);
+  }
+}
 const ProductGrid = memo(function ProductGrid() {
   //Selectors For Redux Thunk
 
@@ -101,7 +111,7 @@ const ProductGrid = memo(function ProductGrid() {
   const [currentImage, setCurrentImage] = useState(0);
   const [editBarActive, seteditBarActive] = useState(false);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const [sort, setSort] = useState("");
   const [priceRange, setPricerange] = useState("");
   const [category, setCategory] = useState("");
@@ -900,16 +910,8 @@ const ProductGrid = memo(function ProductGrid() {
             </div>
             <div
               className="carousel-container mt-2"
-              onMouseLeave={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                if (indexFilter != 55) {
-                  setindexFilter(-1);
-                  noFilterForProducts();
-                }
-              }}
             >
-              <button
+               <button
                 className={` ${currentImage > 0 ? "prev" : "prev bg-dark"}`}
                 onClick={prevSlide}
               >
@@ -923,29 +925,16 @@ const ProductGrid = memo(function ProductGrid() {
                 className="carousel-slide"
               >
                 {imagesToShow.map((imagexx, index) => (
-                  <div key={index + "text-center"} className="text-center">
+                  <Link to={`/Searchtarget?search=${imagexx.value}`} key={index + "text-center"} className="text-center">
                     <img
                       key={index}
-                      src={imagexx.link}
+                      src={imagexx?.link}
                       alt={`Image ${currentImage + 1}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setindexFilter(55);
-                        setOpen(false);
-                        setnoFilter(true);
-                        dispatchrec({ type: "carausal", event: imagexx.value });
-                      }}
-                      onMouseEnter={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-
-                        dispatchrec({ type: "carausal", event: imagexx.value });
-                      }}
                     />
                     <label>
                       <h4>{imagexx.value} </h4>
                     </label>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
@@ -1240,7 +1229,7 @@ const ProductGrid = memo(function ProductGrid() {
                      <div className="form-check">
                      <input onChange={(e)=>{
                       if(e.target.checked ==true){
-                        const temp = e.target.value.split(" ").join("-")
+                        const temp = e.target.value.split(" ").join("-");
                         setRestaurents(temp)
                       }else{
                         setRestaurents("")
@@ -1251,16 +1240,16 @@ const ProductGrid = memo(function ProductGrid() {
                        defaultValue=""
                        id={"flexCheckChecked1" +index}
                        defaultChecked=""
-                       value={item.value}
+                       value={item?.name}
                      />
                      <label
                        className="form-check-label"
                        htmlFor="flexCheckChecked1"
                      >
-                       {item.label}
+                       {item.name.split("").slice(0,19).join("")} {item.name.split("").length>19 && "..."}
                      </label>
                      <span className="badge badge-secondary float-end">
-                       120
+                      {item?.count ?? 0}
                      </span>
                    </div>
                       ))}
@@ -1335,84 +1324,7 @@ const ProductGrid = memo(function ProductGrid() {
                   </div>
                 </div>
               </div>
-              <div className="accordion-item">
-                <h2 className="accordion-header" id="headingThree">
-                  <button
-                    className="accordion-button text-dark bg-light"
-                    type="button"
-                    data-mdb-toggle="collapse"
-                    data-mdb-target="#panelsStayOpen-collapseFour"
-                    aria-expanded="false"
-                    aria-controls="panelsStayOpen-collapseFour"
-                  >
-                    Size
-                  </button>
-                </h2>
-                <div
-                  id="panelsStayOpen-collapseFour"
-                  className="accordion-collapse collapse show"
-                  aria-labelledby="headingThree"
-                >
-                  <div className="accordion-body">
-                    <input
-                      type="checkbox"
-                      className="btn-check border justify-content-center"
-                      id="btn-check1"
-                      defaultChecked=""
-                      autoComplete="off"
-                    />
-                    <label
-                      className="btn btn-white mb-1 px-1"
-                      style={{ width: 60 }}
-                      htmlFor="btn-check1"
-                    >
-                      XS
-                    </label>
-                    <input
-                      type="checkbox"
-                      className="btn-check border justify-content-center"
-                      id="btn-check2"
-                      defaultChecked=""
-                      autoComplete="off"
-                    />
-                    <label
-                      className="btn btn-white mb-1 px-1"
-                      style={{ width: 60 }}
-                      htmlFor="btn-check2"
-                    >
-                      SM
-                    </label>
-                    <input
-                      type="checkbox"
-                      className="btn-check border justify-content-center"
-                      id="btn-check3"
-                      defaultChecked=""
-                      autoComplete="off"
-                    />
-                    <label
-                      className="btn btn-white mb-1 px-1"
-                      style={{ width: 60 }}
-                      htmlFor="btn-check3"
-                    >
-                      LG
-                    </label>
-                    <input
-                      type="checkbox"
-                      className="btn-check border justify-content-center"
-                      id="btn-check4"
-                      defaultChecked=""
-                      autoComplete="off"
-                    />
-                    <label
-                      className="btn btn-white mb-1 px-1"
-                      style={{ width: 60 }}
-                      htmlFor="btn-check4"
-                    >
-                      XXL
-                    </label>
-                  </div>
-                </div>
-              </div>
+          
               <div className="accordion-item">
                 <h2 className="accordion-header" id="headingThree">
                   <button
@@ -1522,8 +1434,8 @@ const ProductGrid = memo(function ProductGrid() {
         {/* content */}
         <div className="col-lg-9">
           <header className="d-sm-flex align-items-center border-bottom mb-4 pb-3">
-            <strong className="d-block py-2">{totalProductsLength} Items found </strong>
-            <div className="ms-auto mx-2" >
+            <strong className="d-block py-2 position-sticky">{totalProductsLength} Items found </strong>
+            <div className="ms-auto mx-2 " style={{ position: "sticky"}} >
               <select className="form-select d-inline-block w-auto border pt-1" onChange={(e)=>{
                   setSort(e.target.value)  
               }}> 
@@ -1569,6 +1481,7 @@ const ProductGrid = memo(function ProductGrid() {
                       {products1.map((product, index) => (
                         <>
                           {product?.VisibleStatus != true && (
+                            <> 
                             <div
                               className={`col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3`}
                               key={index + "col-12 col-sm-6"}
@@ -1599,8 +1512,11 @@ const ProductGrid = memo(function ProductGrid() {
                                 previousUserdata[0]?.Access === "Admin") && (
                                 <Link
                                   to={`/ProductOverview/${product._id}`}
-                                  className="text-decoration-none"
-                                >
+                                  className=" text-decoration-none"
+                                >   
+<span className="badge badge-primary" style={{ backgroundColor: 'yellow', margin: '-2.25px 0 0', marginLeft: '-2px', color: "black", padding: "5px"}}>
+  <span className="font-weight-bold">{product?.city}</span>
+</span>
                                   <div
                                     className={`card mb-4 ${
                                       product?.category === "non-vegetarian"
@@ -1608,12 +1524,13 @@ const ProductGrid = memo(function ProductGrid() {
                                         : "veg"
                                     }`}
                                   >
+                               
                                     <img
                                       data-aos="zoom-out-down"
                                       src={product.thumbnail}
                                       alt="Product Card"
                                       className="card-img-top img-fluid"
-                                      style={{ maxHeight: "200px" }}
+                                      style={{ maxHeight: "200px" , width: 'auto'}}
                                     />
                                     <div className="card-body">
                                       <h5
@@ -1708,6 +1625,10 @@ const ProductGrid = memo(function ProductGrid() {
                                 </div>
                               )}
                             </div>
+                         
+
+                            </> 
+                            
                           )}
                         </>
                       ))}
@@ -1758,17 +1679,16 @@ const ProductGrid = memo(function ProductGrid() {
                     className={`page-item page-link ${
                       currentpage == index + 1 ? "bg-warning " : ""
                     }`}
-                    value={value }
                     onClick={(e) =>{
                       setSkip(index * limit);
                       setcurrentpage(Math.ceil((index+1)));
                     }
                     }
                   >
-                    {value + 1}
+                    {value + 1 }
                   </li>
                 )
-              )}
+              )} {"..."}
               <li
                 className={`page-item page-link`}
                 onClick={(e) => {

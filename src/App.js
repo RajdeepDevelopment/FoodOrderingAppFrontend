@@ -41,6 +41,7 @@ import TestCom from './features/TestCom';
 import Test from './features/counter/infinitScroll';
 import AmChartTimeFrame from './Components/AmCharts/AmChartTimeFrame';
 import UserActivity from './features/counter/UserActivity';
+import Searchtarget from './features/TestCom';
 
 function App() {
   const NotificationActiveBar = useSelector(selectNotificationActiveBar)
@@ -107,7 +108,7 @@ function App() {
       element: <> <ProtectedUser>  <Navbar></Navbar> <Career></Career> </ProtectedUser>  </>  
     },{
       path: "AppliedJob",
-      element: <> <AdminPretected>   <ProtectedUser> <Navbar></Navbar> <AppliedJob></AppliedJob></ProtectedUser> </AdminPretected> </>  
+      element: <> <AdminPretected> <ProtectedUser> <Navbar></Navbar> <AppliedJob></AppliedJob></ProtectedUser> </AdminPretected> </>  
     },{
       path: "RequestDelivery",
       element: <>  <ProtectedUser>  <Navbar></Navbar> <RequestDelivery></RequestDelivery></ProtectedUser>  </>  
@@ -133,8 +134,8 @@ function App() {
       element: <>   <Navbar> </Navbar><UserActivity> </UserActivity></>  
     },
     {
-      path: "TestCom",
-      element: <>   <TestCom> </TestCom></>  
+      path: "Searchtarget",
+      element: <>   <Searchtarget> </Searchtarget></>  
     }, 
     {
       path: "InfinitScroll",

@@ -9,9 +9,10 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectProducts } from "../../features/counter/counterSlice";
 
-function AmChartsForResNprod({uniquerestaurent, StateLfForRestaurant, prevUser}){
+function AmChartsForResNprod({ prevUser, RestaurantLp2}){
      const products = useSelector( selectProducts)
     useEffect(()=>{
+      if(RestaurantLp2.length>0){
         am4core.useTheme(am4themes_animated);
         // Themes end
         
@@ -20,23 +21,8 @@ function AmChartsForResNprod({uniquerestaurent, StateLfForRestaurant, prevUser})
         chart.logo.disabled =true
         
         let networkSeries = chart.series.push(new am4plugins_forceDirected.ForceDirectedSeries())
-        
-        const uniqueRestaurantsWithProducts = uniquerestaurent.map((restaurant) => {
-            const child = products.filter((product) => product.restaurantName === restaurant);
-              const helperMap  = child.map((element, index)=>(
-                {
-                    name: element.name, value: index * (index* element.price* element.rating), img: element.thumbnail, _id: element?._id, price: element.price, rating: element.rating, discountPercentage: element.discountPercentage, uid: element.uid
-                  }
-              )) 
 
-            return {
-              name: restaurant,
-              children: helperMap, 
-            };
-          });
-
-StateLfForRestaurant(uniqueRestaurantsWithProducts)
-        networkSeries.data =  uniqueRestaurantsWithProducts;
+        networkSeries.data =  RestaurantLp2;
         networkSeries.dataFields.linkWith = "linkWith";
         networkSeries.dataFields.name = "name";
         networkSeries.dataFields.id = "name";
@@ -53,7 +39,10 @@ StateLfForRestaurant(uniqueRestaurantsWithProducts)
         networkSeries.manyBodyStrength = -0;
         networkSeries.nodes.template.label.hideOversized = true;
         networkSeries.nodes.template.label.truncate = true;
-      }, [])
+
+      }
+        
+      }, [RestaurantLp2])
 
     return(<>
      {prevUser?.length !=0 && prevUser[0].Access ==="Admin" &&  

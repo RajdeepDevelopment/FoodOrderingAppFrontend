@@ -64,7 +64,9 @@ import {
   getCuisineData,
   getPriceRangeData,
   getCategoryData, 
-  getrestaurentData
+  getrestaurentData,
+  getTargetSearchResult,
+  getRestaurantsWithProducts
 } from "./counterAPI";
 
 const initialState = {
@@ -115,7 +117,9 @@ const initialState = {
   CategoryData: {},
   PriceRangeData: {},
   CuisineData: {}, 
-  restaurantName: {}
+  restaurantName: {},
+  targetSearchResult: {}, 
+  uniqueRestaurantWithProducts: []
 };
 export const incrementAsync = createAsyncThunk(
   "counter/fetchCount",
@@ -179,8 +183,8 @@ export const getCuisineDataAsync = createAsyncThunk(
 
 export const getrestaurentDataAsync = createAsyncThunk(
   "counter/getrestaurentData",
-  async (id) => {
-    const response = await getrestaurentData(id);
+  async () => {
+    const response = await getrestaurentData();
     // The value we return becomes the `fulfilled` action payload
     return response;
   }
@@ -609,6 +613,15 @@ export const getAllReviewDataAsync = createAsyncThunk(
     return response;
   }
 );
+export const getRestaurantsWithProductsAsync = createAsyncThunk(
+  "counter/getRestaurantsWithProducts",
+  async (id) => {
+    const response = await getRestaurantsWithProducts();
+    
+    return response;
+  }
+);
+//getRestaurantsWithProducts
 
 export const getCreateUserAsync = createAsyncThunk(
   "counter/getCreateUserdfgfd",
@@ -709,6 +722,15 @@ export const getSearchResultAsync = createAsyncThunk(
     return response;
   }
 );
+
+export const gettargetSearchResultAsync = createAsyncThunk(
+  "counter/getTargetSearchResult",
+  async (searchData) => {
+    const response = await getTargetSearchResult(searchData);
+    return response;
+  }
+);
+
 
 export const getAllUserSearchDatatAsync = createAsyncThunk(
   "counter/getAllUserSearchData",
@@ -1586,8 +1608,22 @@ export const counterSlice = createSlice({
         state.status = "idle";
         state.restaurantName
         = action.payload;
+      }).addCase(gettargetSearchResultAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(gettargetSearchResultAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.targetSearchResult
+        = action.payload;
+      }).addCase(getRestaurantsWithProductsAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getRestaurantsWithProductsAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.uniqueRestaurantWithProducts
+        = action.payload;
       });
-
+   // uniqueRestaurantWithProducts
       //getCategoryDataAsync, getPriceRangeDataAsync, getCuisineDataAsync, getrestaurentDataAsync
 
   },
@@ -1657,7 +1693,11 @@ export const selectCuisineData = (state) =>
   state.counter.restaurantName;
   export const selectunReadNotificationData = (state) =>
   state.counter.unReadNotification;
-//restaurantName
+  export const selectTargetSearchResultData = (state) =>
+  state.counter.targetSearchResult;
+  export const selectuniqueRestaurantWithProducts = (state) =>
+  state.counter.uniqueRestaurantWithProducts;
+//targetSearchResult
 export const incrementIfOdd = (amount) => (dispatch, getState) => {
   const currentValue = selectCount(getState());
   if (currentValue % 2 === 1) {

@@ -3,7 +3,7 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts"; 
 import am4themes_animated from "@amcharts/amcharts4/themes/animated"; 
 
-import {  getUpdateEventObjectDataAsync, selectPreviousUserData, selectProducts, selecteventObjectData, selectuser, targetRestauranrDataAsync } from "../features/counter/counterSlice";
+import {  getRestaurantsWithProductsAsync, getUpdateEventObjectDataAsync, getrestaurentDataAsync, selectPreviousUserData, selectProducts, selecteventObjectData, selectrestaurantName, selectuniqueRestaurantWithProducts, selectuser, targetRestauranrDataAsync } from "../features/counter/counterSlice";
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -21,19 +21,21 @@ function BrowseRestaurant(){
     const dispatch = useDispatch();
 
  const products = useSelector(selectProducts); 
- const prevUser = useSelector(selectPreviousUserData)
+ const prevUser = useSelector(selectPreviousUserData);
+ const restaurantName = useSelector(selectrestaurantName)
  const [passPropData, setpassPropData] = useState([])
- const [RestaurantLp,setRestaurantLp ] = useState([])
- const EventObjectData = useSelector(selecteventObjectData)
+ const EventObjectData = useSelector(selecteventObjectData);
+ const RestaurantLp = useSelector(selectuniqueRestaurantWithProducts)
 
- function StateLfForRestaurant(data){
-  setRestaurantLp(data); 
- }
+ useEffect(()=>{
+  dispatch(getrestaurentDataAsync());
+  dispatch(getRestaurantsWithProductsAsync())
+}, [])
+
+
+
  const RestaurentSet = new Set(); 
  const RestaurentProductsCount = {} 
- let uniquerestaurent = []; 
-
-
 
 
 useEffect(()=>{
@@ -44,30 +46,11 @@ useEffect(()=>{
         let chart = am4core.create("allRestaunantDiv", am4charts.PieChart);
         
          chart.logo.disabled = true
-
-         products.forEach(element => { 
-            if( !RestaurentSet.has(element.restaurantName)){ 
-              RestaurentSet.add(element.restaurantName) 
-            } 
-           
-           }); 
-           
-           products.forEach(element => { 
-            if (!RestaurentProductsCount.hasOwnProperty(element.restaurantName)) { 
-              RestaurentProductsCount[element.restaurantName] = 1; 
-            } else { 
-              RestaurentProductsCount[element.restaurantName]++; 
-            } 
-          }); 
-           
-          uniquerestaurent = Array.from(RestaurentSet); 
-         
-          setpassPropData(uniquerestaurent)
           
-         chart.data = uniquerestaurent.map((element)=>( 
+         chart.data = restaurantName?.data?.map((element)=>( 
             { 
-                "country": element, 
-                "litres": RestaurentProductsCount[element] 
+                "country": element.name, 
+                "litres": element.count
               } 
          
          )) 
@@ -93,13 +76,9 @@ useEffect(()=>{
         chart.logo.disabled = true
 
         chart.legend.position = "right";
-       
-
-        
-
         
     }
-}, [isLargeScreen])
+}, [isLargeScreen, restaurantName])
     return(<div className="mb-4"> 
       
   {isLargeScreen ? <> 
@@ -602,7 +581,7 @@ useEffect(()=>{
 ""                      }}
                     >   <option> Filter </option>
 
-                      {RestaurantLp.map((element, index)=>(
+                      {RestaurantLp?.map((element, index)=>(
                         <option key={index+element.name}> {element.name} </option>
                       ))}
                     </select>
@@ -660,7 +639,7 @@ useEffect(()=>{
       <Link  to={"/TargetRestaurent"}> 
 
       </Link> 
-      {RestaurantLp.map((element, index)=>(
+      {RestaurantLp?.map((element, index)=>(
  <div key={index*2*6} className="col-sm-3 col-lg-3 all pizza" onClick={()=>{
   dispatch(targetRestauranrDataAsync(element))
 
@@ -739,7 +718,7 @@ useEffect(()=>{
   <div className="shadow p-4 mb-4">
 
 
-    <AmChartsForResNprod  prevUser={prevUser} StateLfForRestaurant= {StateLfForRestaurant} uniquerestaurent = {passPropData} > </AmChartsForResNprod>
+    <AmChartsForResNprod  prevUser={prevUser} RestaurantLp = {RestaurantLp} > </AmChartsForResNprod>
   </div>
 
  }
