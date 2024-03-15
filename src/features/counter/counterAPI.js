@@ -28,7 +28,16 @@ export function getProductData(query) {
             const longitude = position.coords.longitude;
             let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
             LocationData = await LocationData.json();
-            const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/products" + `${query}&city=${LocationData.address.city}`);
+            let city;
+            if (LocationData?.address?.city) {
+                city = LocationData.address.city;
+            } else {
+                // If city is not available, fallback to fetching city using IP address
+                const ipData = await fetch('https://ipapi.co/json');
+                const ipLocationData = await ipData.json();
+                city = ipLocationData.city;
+            }           
+             const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/products" + `${query}&city=${city}`);
             const data = await response.json();
             resolve(data);
           } catch (error) {
@@ -60,21 +69,74 @@ export function getProductData(query) {
 
 export function getCategoryData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory`);
-    const data = await response.json();
-
-    resolve(data);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            LocationData = await LocationData.json();
+            let city;
+            if (LocationData?.address?.city) {
+                city = LocationData.address.city;
+            } else {
+                // If city is not available, fallback to fetching city using IP address
+                const ipData = await fetch('https://ipapi.co/json');
+                const ipLocationData = await ipData.json();
+                city = ipLocationData.city;
+            }           
+             const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory" + `?city=${city}`);
+            const data = await response.json();
+            resolve(data);
+          } catch (error) {
+            console.error("Error fetching product data:", error);
+            // Fallback to default city
+            const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory");
+            const data = await response.json();
+            resolve(data);
+          }
+        },
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Fallback to default city
+          const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory");
+          const data = await response.json();
+          resolve(data);
+        }
+      );
+    } else {
+      // Geolocation not supported
+      console.error("Geolocation not supported.");
+      // Fallback to default city
+      const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory`);
+      const data = await response.json();
+      resolve(data);
+    }
   });
+    // const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory`);
+    // const data = await response.json();
+    // resolve(data);
+
 }
 export function getrestaurentData(query) {
   return new Promise(async (resolve) => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
+        const longitude = position.coords.longitude;     
         let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
         LocationData = await LocationData.json();
-        const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurent" +`?city=${LocationData.address.city}`);
+        let city;
+        if (LocationData?.address?.city) {
+            city = LocationData.address.city;
+        } else {
+            // If city is not available, fallback to fetching city using IP address
+            const ipData = await fetch('https://ipapi.co/json');
+            const ipLocationData = await ipData.json();
+            city = ipLocationData.city;
+        }           
+        const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueRestaurent" +`?city=${city}`);
         const data = await response.json();
         resolve(data);
       }, async () => {
@@ -96,18 +158,104 @@ export function getrestaurentData(query) {
 
 export function getPriceRangeData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange`);
-    const data = await response.json();
-
-    resolve(data);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            LocationData = await LocationData.json();
+            let city;
+            if (LocationData?.address?.city) {
+                city = LocationData.address.city;
+            } else {
+                // If city is not available, fallback to fetching city using IP address
+                const ipData = await fetch('https://ipapi.co/json');
+                const ipLocationData = await ipData.json();
+                city = ipLocationData.city;
+            }           
+             const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange" +`?&city=${city}`);
+            const data = await response.json();
+            resolve(data);
+          } catch (error) {
+            console.error("Error fetching product data:", error);
+            // Fallback to default city
+            const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange`);
+            const data = await response.json();
+            resolve(data);
+          }
+        },
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Fallback to default city
+          const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange");
+          const data = await response.json();
+          resolve(data);
+        }
+      );
+    } else {
+      // Geolocation not supported
+      console.error("Geolocation not supported.");
+      // Fallback to default city
+      const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniquePriceRange`);
+      const data = await response.json();
+      resolve(data);
+    }
   });
+  
 }
 export function getCuisineData(query) {
   return new Promise(async (resolve) => {
-    const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine`);
-    const data = await response.json();
-    resolve(data);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            let LocationData = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            LocationData = await LocationData.json();
+            let city;
+            if (LocationData?.address?.city) {
+                city = LocationData.address.city;
+            } else {
+                // If city is not available, fallback to fetching city using IP address
+                const ipData = await fetch('https://ipapi.co/json');
+                const ipLocationData = await ipData.json();
+                city = ipLocationData.city;
+            }           
+             const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine" + `?city=${city}`);
+            const data = await response.json();
+            resolve(data);
+          } catch (error) {
+            console.error("Error fetching product data:", error);
+            // Fallback to default city
+            const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine");
+            const data = await response.json();
+            resolve(data);
+          }
+        },
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Fallback to default city
+          const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine");
+          const data = await response.json();
+          resolve(data);
+        }
+      );
+    } else {
+      // Geolocation not supported
+      console.error("Geolocation not supported.");
+      // Fallback to default city
+      const response = await fetch("https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine");
+      const data = await response.json();
+      resolve(data);
+    }
   });
+    // const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCuisine`);
+    // const data = await response.json();
+    // resolve(data);
+ 
 }
 
 export function getMeetingData() {

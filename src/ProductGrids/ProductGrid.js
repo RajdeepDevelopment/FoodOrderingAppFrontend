@@ -1457,13 +1457,13 @@ const ProductGrid = memo(function ProductGrid() {
                       
                         onChange={(option)=>{
                         if(section?.id==="category"){
-                          setCategory(option?.value)
+                          setCategory(option?.label)
                          } 
                          if(section?.id==="cuisine"){
-                          setCuisine(option?.value)
+                          setCuisine(option?.label)
                          } 
                          if(section?.id==="price"){
-                           setPricerange(option?.value)
+                           setPricerange(option?.label)
                          }                                
                          }}
                          isClearable={true}
@@ -1480,7 +1480,7 @@ const ProductGrid = memo(function ProductGrid() {
                     <div className="row mt-4" id="cartmain">
                       {products1.map((product, index) => (
                         <>
-                          {product?.VisibleStatus != true && (
+                          {product?.VisibleStatus ?product?.VisibleStatus : true && (
                             <> 
                             <div
                               className={`col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3`}
