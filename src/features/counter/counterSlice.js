@@ -68,6 +68,7 @@ import {
   getTargetSearchResult,
   getRestaurantsWithProducts
 } from "./counterAPI";
+import Cookies from "js-cookie";
 
 const initialState = {
   value: 0,
@@ -76,8 +77,8 @@ const initialState = {
   productTarget: [],
   review: [],
   checkReview: [],
-  user: null,
-  previousUser: [],
+  user: Boolean (Cookies.get("user") )?JSON.parse( Cookies.get("user")): null,
+  previousUser: Boolean(Cookies.get("prevUserData"))? JSON.parse(Cookies.get("prevUserData")): [],
   searchdata: [],
   searchBarIndicator: null,
   order: [],
@@ -119,7 +120,8 @@ const initialState = {
   CuisineData: {}, 
   restaurantName: {},
   targetSearchResult: {}, 
-  uniqueRestaurantWithProducts: []
+  uniqueRestaurantWithProducts: [],
+  city: "Other"
 };
 export const incrementAsync = createAsyncThunk(
   "counter/fetchCount",
@@ -621,7 +623,16 @@ export const getRestaurantsWithProductsAsync = createAsyncThunk(
     return response;
   }
 );
-//getRestaurantsWithProducts
+
+export const getCurrentLocationAsync = createAsyncThunk(
+  "counter/getCurrentLocationfunction",
+  async (id) => {
+    const ipData = await fetch("https://ipapi.co/json");
+    const response = await ipData.json();
+    return response;
+  }
+);
+//const ipData = await fetch('https://ipapi.co/json');
 
 export const getCreateUserAsync = createAsyncThunk(
   "counter/getCreateUserdfgfd",
@@ -654,7 +665,7 @@ export const getCreateUserAsync = createAsyncThunk(
       userData.photoURL =
         "https://cdn-icons-png.flaticon.com/512/3177/3177440.png";
     }
-
+   Cookies.set("user", JSON.stringify(userData))
     return userData;
   }
 );
@@ -990,6 +1001,11 @@ export const counterSlice = createSlice({
       })
       .addCase(getLogoutAsync.fulfilled, (state, action) => {
         state.status = "idle";
+        Cookies.set("user", null);
+        Cookies.set("prevUserData", null);
+        Cookies.remove('user');
+        Cookies.remove('prevUserData');
+
         state.user = null;
       })
       .addCase(getCreateOrderAsync.pending, (state) => {
@@ -1095,7 +1111,8 @@ export const counterSlice = createSlice({
       })
       .addCase(getCreateUserAddressAsync.fulfilled, (state, action) => {
         state.status = "idle";
-        state.previousUser.push(action.payload);
+        Cookies.set("prevUserData", JSON.stringify([action.payload]));
+        state.previousUser = [action.payload];
       })
       .addCase(getUpdateUserAddressAsync.pending, (state) => {
         state.status = "loading";
@@ -1104,6 +1121,7 @@ export const counterSlice = createSlice({
         state.status = "idle";
         if (state.previousUser.length != 0) {
           state.previousUser.slice(0, 1).push(action.payload);
+          Cookies.set("prevUserData",JSON.stringify([action.payload]));
         }
       })
       .addCase(getProductForLocationAsync.pending, (state) => {
@@ -1622,8 +1640,15 @@ export const counterSlice = createSlice({
         state.status = "idle";
         state.uniqueRestaurantWithProducts
         = action.payload;
+      }).addCase(getCurrentLocationAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getCurrentLocationAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.city
+        = action.payload?.city?? "Other";
       });
-   // uniqueRestaurantWithProducts
+   // getCurrentLocationAsync
       //getCategoryDataAsync, getPriceRangeDataAsync, getCuisineDataAsync, getrestaurentDataAsync
 
   },
@@ -1697,6 +1722,8 @@ export const selectCuisineData = (state) =>
   state.counter.targetSearchResult;
   export const selectuniqueRestaurantWithProducts = (state) =>
   state.counter.uniqueRestaurantWithProducts;
+  export const selectCurrentCity = (state) =>
+  state.counter.city;
 //targetSearchResult
 export const incrementIfOdd = (amount) => (dispatch, getState) => {
   const currentValue = selectCount(getState());

@@ -21,6 +21,7 @@
     "emailjs-com": "^3.2.0",
     "firebase": "^10.5.0",
     "googleapis": "^128.0.0",
+    "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
     "process": "^0.11.10",

@@ -5,12 +5,14 @@ import {BsMoonStars} from 'react-icons/bs';
 import {
   getCartDataAsync,
   getCreateUserAddressAsync,
+  getCurrentLocationAsync,
   getLogoutAsync,
   getProductDataAsync,
   getSearchResultAsync,
   getUpdateNotificationxAsync,
   getUpdateUserAddressAsync,
   getsearchdataResetAsync,
+  selectCurrentCity,
   selectNotificationActiveBar,
   selectPreviousUserData,
   selectProducts,
@@ -35,7 +37,7 @@ function Navbar() {
   const searchResults = useSelector(selectsearchdata);
   const products = useSelector(selectProducts);
   const UnReadnotificationData = useSelector(selectunReadNotificationData);
-
+ const city = useSelector(selectCurrentCity)
   const { slug } = useParams();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectuser);
@@ -191,6 +193,9 @@ function Navbar() {
     zIndex: "9999",
     overflowY: "auto",
   };
+  useEffect(()=>{
+    dispatch(getCurrentLocationAsync());
+  },[])
 
   return (
     <>
@@ -306,7 +311,7 @@ function Navbar() {
                 </>
               )}
 
-              {currentUser && (
+              {currentUser ?(
                 <>
                   {preUserData.length != 0 && (
                     <li
@@ -434,8 +439,14 @@ function Navbar() {
                     </li>
                   )}
                 </>
-              )}
-
+              ): <>   
+              <li className="nav-item">
+              <Link className="nav-link" to={"/"}>
+              {city}
+              </Link>
+               
+                </li> </>}
+         
               {
                 currentUser &&
                   preUserData.length != 0 &&

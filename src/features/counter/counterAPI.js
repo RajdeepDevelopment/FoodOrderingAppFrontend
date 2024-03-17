@@ -114,9 +114,6 @@ export function getCategoryData(query) {
       resolve(data);
     }
   });
-    // const response = await fetch(`https://foodorderingapp-mfqa.onrender.com/productssection/uniqueCategory`);
-    // const data = await response.json();
-    // resolve(data);
 
 }
 export function getrestaurentData(query) {
